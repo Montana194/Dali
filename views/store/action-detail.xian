@@ -1,0 +1,142 @@
+{{> head}}
+<body class="flex flex-col min-h-screen bg-slate-50 text-slate-800">
+  {{> navbar}}
+  {{> alerts}}
+
+  <main class="flex-grow py-8 px-4 sm:px-6 lg:px-8 w-full space-y-6">
+    
+    <!-- Header -->
+    <div class="flex items-center justify-between bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div class="flex items-center space-x-3">
+        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 flex items-center justify-center text-xl shadow-sm">
+          <i class="fas fa-wrench"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">Submit Proof of Fix</h1>
+            <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">Store Action Plan</span>
+          </div>
+          <p class="text-sm text-slate-500 mt-0.5">
+            Describe the actions taken to fix the issue and attach photos as proof for the inspector to verify.
+          </p>
+        </div>
+      </div>
+      
+      <a href="/store/dashboard" class="text-sm font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1.5">
+        &larr; Back to Store Dashboard
+      </a>
+    </div>
+
+    <!-- Finding Details -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div>
+          <span class="font-mono text-xs font-bold text-slate-400">Inspection {{action.inspection.inspectionCode}}</span>
+          <h2 class="text-lg font-bold text-slate-900 mt-0.5">{{action.finding.title}}</h2>
+          <p class="text-sm text-slate-600">Store: <strong>{{action.store.name}}</strong> &bull; Fix Deadline: <span class="font-bold text-rose-600">{{formatDate action.dueDate}}</span></p>
+        </div>
+        <div>
+          {{severityBadge action.finding.severity}}
+        </div>
+      </div>
+
+      <div class="bg-rose-50/70 p-4 rounded-xl border border-rose-200 text-sm text-rose-950">
+        <span class="font-bold text-xs uppercase tracking-wider text-rose-700 block mb-1">Problem Found by Inspector:</span>
+        <p class="leading-relaxed">{{action.finding.description}}</p>
+      </div>
+
+      {{#if action.inspectorFeedback}}
+        <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 text-sm text-amber-950">
+          <span class="font-bold text-xs uppercase tracking-wider text-amber-700 block mb-1">Inspector Note / Instructions:</span>
+          <p class="leading-relaxed">{{action.inspectorFeedback}}</p>
+        </div>
+      {{/if}}
+    </div>
+
+    <!-- Remediation Submission Form -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <div class="pb-3 border-b border-slate-100 mb-4 flex items-center justify-between">
+        <div>
+          <h3 class="font-bold text-base text-slate-900">Your Action Plan &amp; Photo Proof</h3>
+          <p class="text-sm text-slate-500">Provide details on repairs, cleaning, or staff training conducted to fix this problem.</p>
+        </div>
+        <div>{{statusBadge action.status}}</div>
+      </div>
+
+      <form method="POST" action="/store/actions/{{action.id}}" enctype="multipart/form-data" class="space-y-4 text-sm">
+        <div>
+          <label class="block font-bold text-slate-800 mb-1">What action was taken to fix the problem?</label>
+          <textarea 
+            name="actionPlan" 
+            rows="3" 
+            placeholder="e.g. Cleaned and sanitized the entire chiller shelf. Reset the temperature regulator and recorded 3.5°C on the log sheet." 
+            class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-dali-600 bg-white text-slate-800"
+            required
+          >{{action.actionPlan}}</textarea>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-800 mb-1">Preventive Steps (How will you prevent this from happening again?)</label>
+          <textarea 
+            name="remediationNotes" 
+            rows="2" 
+            placeholder="e.g. Morning and evening shift leads are assigned to check temperature gauges and log them daily." 
+            class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-dali-600 bg-white text-slate-800"
+          >{{action.remediationNotes}}</textarea>
+        </div>
+
+        <div class="border-t border-slate-100 pt-3">
+          <label class="block font-bold text-slate-800 mb-1">Upload Photo Proof (You can choose multiple photos, up to 5)</label>
+          <input 
+            type="file" 
+            name="remediationPhotos" 
+            multiple 
+            accept="image/*"
+            class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-dali-50 file:text-dali-700 hover:file:bg-dali-100 cursor-pointer"
+          >
+          <p class="text-xs text-slate-500 mt-1">Attach clear photos of the cleaned area, repaired fixture, thermometer reading, or updated logs.</p>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-800 mb-1">Photo Description / Notes</label>
+          <input 
+            type="text" 
+            name="caption" 
+            placeholder="e.g. Photo of cleaned chiller and new temperature monitoring chart" 
+            class="w-full p-3 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-dali-600 bg-white text-slate-800"
+          >
+        </div>
+
+        <!-- Prior Evidence Gallery if any -->
+        {{#if (gt action.evidences.length 0)}}
+          <div class="border-t border-slate-100 pt-3">
+            <span class="font-bold text-slate-800 block mb-2">Previously Attached Photos:</span>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {{#each action.evidences}}
+                <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50 shadow-sm">
+                  <img src="{{this.filePath}}" alt="Evidence" class="h-32 w-full object-cover">
+                  <div class="p-2 text-xs text-slate-600">
+                    <span class="font-semibold block truncate">{{this.caption}}</span>
+                  </div>
+                </div>
+              {{/each}}
+            </div>
+          </div>
+        {{/if}}
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+          <a href="/store/dashboard" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm">
+            Cancel
+          </a>
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-dali-700 hover:bg-dali-800 text-white font-bold text-sm shadow-sm transition-all flex items-center gap-2">
+            <i class="fas fa-paper-plane"></i> Submit for Inspector Verification
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </main>
+
+  {{> footer}}
+</body>
+</html>

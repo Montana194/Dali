@@ -1,0 +1,48 @@
+<header class="shop-header">
+  <div class="topbar">
+    <span>DALI Everyday Grocery &bull; Store Cleanliness &amp; Food Safety</span>
+    <div>
+      {{#if shopUser}}
+        <span style="font-weight:600;">Signed in as {{shopUser.name}}</span>
+        <span style="background:rgba(255,255,255,0.22);padding:4px 12px;border-radius:999px;font-weight:700;font-size:12.5px;letter-spacing:0.2px;">{{roleLabel shopUser.role}}</span>
+      {{else}}
+        <a href="/register">Create Account</a>
+        <a href="/account/login">Sign In</a>
+      {{/if}}
+      {{#if isAdmin}}<a href="/admin">Admin Panel</a>{{/if}}
+      {{#if isInspector}}<a href="/inspector">My Inspections</a>{{/if}}
+      {{#if isStoreRep}}<a href="/store">My Store</a>{{/if}}
+    </div>
+  </div>
+
+  <div class="mainbar">
+    <a class="brand" href="/" aria-label="DALIAudit Home">
+      <span class="bag-icon" aria-hidden="true">
+        <img src="/images/dali-logo.png" alt="DALI" style="height:32px;width:auto;object-fit:contain;">
+      </span>
+      DALIAudit.
+    </a>
+
+    <div class="header-actions">
+      {{#if shopUser}}
+        {{#if (or isInspector isStoreRep)}}
+          <!-- Inspector and Store Rep already have these in their sidebar -->
+        {{else}}
+          <a class="cart-link" href="/reports">
+            <i class="fas fa-award"></i>
+            <span>Inspection Reports</span>
+          </a>
+          <form action="/logout" method="POST" class="logout-form">
+            <input type="hidden" name="_csrf" value="{{shopToken}}">
+            <button class="logout-button" type="submit">Sign Out</button>
+          </form>
+        {{/if}}
+      {{else}}
+        <a class="cart-link" href="/account/login">
+          <i class="fas fa-right-to-bracket"></i>
+          <span>Sign In</span>
+        </a>
+      {{/if}}
+    </div>
+  </div>
+</header>

@@ -1,0 +1,52 @@
+{{> head}}
+<body class="storefront">
+{{> admin-header}}
+<div class="admin-shell">
+  {{> admin-sidebar}}
+  <main class="admin-content">
+    <p class="eyebrow">OVERVIEW</p>
+    <h1>Admin Dashboard</h1>
+    <p class="admin-intro">A quick look at your stores, inspections, users, and reports.</p>
+
+    {{#if success_msg}}<p class="admin-notice" role="status">{{success_msg}}</p>{{/if}}
+    {{#if error_msg}}<p class="admin-notice admin-notice-error" role="alert">{{error_msg}}</p>{{/if}}
+
+    <div class="admin-stats">
+      <a href="/admin/stores">
+        <span>Store Branches</span>
+        <strong>{{storeCount}}</strong>
+        <small>View all branches →</small>
+      </a>
+      <a href="/admin/inspections">
+        <span>Inspections</span>
+        <strong>{{inspectionCount}}</strong>
+        <small>View all inspections →</small>
+      </a>
+      <a href="/admin/users">
+        <span>Active Users</span>
+        <strong>{{userCount}}</strong>
+        {{#if (gt pendingUserCount 0)}}
+          <small style="color:#b45309;font-weight:700;">🔔 {{pendingUserCount}} waiting for your approval →</small>
+        {{else}}
+          <small>Manage users &amp; roles →</small>
+        {{/if}}
+      </a>
+      <a href="/admin/reports">
+        <span>Inspection Reports</span>
+        <strong>{{reportCount}}</strong>
+        <small>View all reports →</small>
+      </a>
+    </div>
+
+    <section class="admin-panel">
+      <h2>Quick Actions</h2>
+      <p>Choose a store and an inspector to set up a new inspection, or add a new branch or user.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <a href="/admin/schedule" class="hero-button">+ Schedule an Inspection</a>
+        <a href="/admin/stores" class="hero-button" style="background:#302b28;">+ Add a Store Branch</a>
+        <a href="/admin/users/create" class="hero-button" style="background:#475569;">+ Add a User</a>
+      </div>
+    </section>
+  </main>
+</div>
+{{> footer}}

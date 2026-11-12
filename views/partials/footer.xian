@@ -1,0 +1,10 @@
+<footer class="shop-footer">
+  <a href="/" class="footer-brand" style="display:inline-flex;align-items:center;gap:8px;">
+    <img src="/images/dali-logo.png" alt="DALI Logo" style="height:24px;width:auto;">
+    DALIAudit<span>.</span>
+  </a>
+  <p>DALI Everyday Grocery &middot; Store Cleanliness &amp; Food Safety Inspection System</p>
+  <small>&copy; 2026 DALI Everyday Grocery &middot; Quality Assurance Team</small>
+</footer>
+</body>
+</html>

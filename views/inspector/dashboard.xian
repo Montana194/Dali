@@ -1,0 +1,110 @@
+{{> head}}
+<body class="storefront">
+{{> shop-nav}}
+
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <p class="eyebrow">INSPECTOR MENU</p>
+    <nav aria-label="Inspector navigation">
+      <a href="/inspector" style="background:#fdf2f8;color:var(--dali);font-weight:800;"><i class="fas fa-clipboard-user" style="width:22px;opacity:0.9;"></i> My Inspections</a>
+      <a href="/reports"><i class="fas fa-award" style="width:22px;opacity:0.75;"></i> Inspection Reports</a>
+      <a href="/"><i class="fas fa-arrow-up-right-from-square" style="width:22px;opacity:0.75;"></i> Home Page</a>
+      <form action="/logout" method="POST">
+        <input type="hidden" name="_csrf" value="{{shopToken}}">
+        <button type="submit"><i class="fas fa-right-from-bracket" style="width:22px;"></i> Sign Out</button>
+      </form>
+    </nav>
+  </aside>
+
+  <main class="admin-content">
+    <p class="eyebrow">INSPECTOR</p>
+    <h1>My Inspections</h1>
+    <p class="admin-intro">Here are the stores assigned to you. Start an inspection, take photos as proof, and check the fixes that stores send back.</p>
+
+    {{#if success_msg}}<p class="admin-notice" role="status">{{success_msg}}</p>{{/if}}
+    {{#if error_msg}}<p class="admin-notice admin-notice-error" role="alert">{{error_msg}}</p>{{/if}}
+
+    <div class="admin-stats">
+      <a><span>Assigned to Me</span><strong>{{metrics.total}}</strong><small>Total inspections</small></a>
+      <a><span>To Do</span><strong style="color:#0284c7;">{{metrics.pending}}</strong><small>Not started or not finished</small></a>
+      <a><span>Fixes to Check</span><strong style="color:#b45309;">{{metrics.verifications}}</strong><small>Stores sent proof of fixes</small></a>
+      <a><span>Done</span><strong style="color:#16a34a;">{{metrics.completed}}</strong><small>Passed or closed</small></a>
+    </div>
+
+    {{#if (gt pendingVerifications.length 0)}}
+      <section class="admin-panel" style="margin-bottom:24px;border-color:#f0b39e;background:#fff8ee;">
+        <h2 style="color:#b54423;">Store Fixes Waiting for Your Review</h2>
+        <p style="margin:8px 0 16px;">These stores say they have fixed the problems you found. Please review their proof and approve or return it.</p>
+        <div style="display:grid;gap:12px;">
+          {{#each pendingVerifications}}
+            <div style="background:white;border:1px solid #e5e7eb;border-radius:12px;padding:16px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
+              <div style="flex:1;min-width:260px;">
+                <strong style="font-size:15.5px;">{{this.finding.title}}</strong>
+                <p style="font-size:14px;color:var(--muted);margin:4px 0;">Store: <strong>{{this.inspection.store.name}}</strong> &bull; Inspection No.: {{this.inspection.inspectionCode}}</p>
+                <div style="background:#f9fafb;padding:10px;border-radius:8px;font-size:14px;">
+                  <strong>What the store did:</strong> {{this.actionPlan}}
+                </div>
+              </div>
+              <a href="/inspector/verify/{{this.id}}" class="hero-button" style="padding:10px 16px;font-size:13.5px;background:#b45309;">Review Fix →</a>
+            </div>
+          {{/each}}
+        </div>
+      </section>
+    {{/if}}
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th scope="col">Inspection No.</th>
+            <th scope="col">Store</th>
+            <th scope="col">Date</th>
+            <th scope="col">Status</th>
+            <th scope="col">Score</th>
+            <th scope="col">Problems Found</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each assignedInspections}}
+            <tr>
+              <td><strong>{{this.inspectionCode}}</strong></td>
+              <td><strong>{{this.store.name}}</strong><small>{{this.store.address}}</small></td>
+              <td>{{formatDate this.scheduledDate}}</td>
+              <td><span class="quantity-pill">{{statusLabel this.status}}</span></td>
+              <td><strong>{{this.score}}%</strong></td>
+              <td>
+                {{#if (gt this.findings.length 0)}}
+                  <span class="quantity-pill" style="background:#fee2e2;color:#991b1b;font-weight:bold;">{{this.findings.length}} found</span>
+                {{else}}
+                  <span style="color:#16a34a;font-weight:bold;">None</span>
+                {{/if}}
+              </td>
+              <td>
+                <div class="product-actions">
+                  {{#if (eq this.status 'Scheduled')}}
+                    <a class="hero-button" style="padding:8px 14px;font-size:13px;" href="/inspector/conduct/{{this.id}}">Start Inspection →</a>
+                  {{/if}}
+                  {{#if (eq this.status 'InProgress')}}
+                    <a class="hero-button" style="padding:8px 14px;font-size:13px;background:#0284c7;" href="/inspector/conduct/{{this.id}}">Continue →</a>
+                  {{/if}}
+                  {{#if (eq this.status 'Noncompliant')}}
+                    <a class="edit-product-button" href="/inspector/conduct/{{this.id}}">Review Checklist</a>
+                  {{/if}}
+                  {{#if (eq this.status 'Closed')}}
+                    <a class="edit-product-button" href="/reports/view/{{this.id}}">View Report</a>
+                  {{/if}}
+                </div>
+              </td>
+            </tr>
+          {{else}}
+            <tr>
+              <td colspan="7">You have no inspections assigned yet. The administrator will assign them to you.</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+{{> footer}}

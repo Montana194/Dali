@@ -1,0 +1,17 @@
+<aside class="admin-sidebar">
+  <p class="eyebrow">ADMIN MENU</p>
+  <nav aria-label="Admin navigation">
+    <a href="/admin"><i class="fas fa-chart-pie" style="width:22px;opacity:0.75;"></i> Dashboard</a>
+    <a href="/admin/users"><i class="fas fa-users-gear" style="width:22px;opacity:0.75;"></i> Users &amp; Roles</a>
+    <a href="/admin/stores"><i class="fas fa-store" style="width:22px;opacity:0.75;"></i> Store Branches</a>
+    <a href="/admin/schedule"><i class="fas fa-calendar-check" style="width:22px;opacity:0.75;"></i> Schedule an Inspection</a>
+    <a href="/admin/checklists"><i class="fas fa-list-check" style="width:22px;opacity:0.75;"></i> Inspection Checklist</a>
+    <a href="/admin/inspections"><i class="fas fa-clipboard-list" style="width:22px;opacity:0.75;"></i> All Inspections</a>
+    <a href="/admin/reports"><i class="fas fa-award" style="width:22px;opacity:0.75;"></i> Inspection Reports</a>
+    <a href="/"><i class="fas fa-arrow-up-right-from-square" style="width:22px;opacity:0.75;"></i> Home Page</a>
+    <form action="/logout" method="POST">
+      <input type="hidden" name="_csrf" value="{{shopToken}}">
+      <button type="submit"><i class="fas fa-right-from-bracket" style="width:22px;"></i> Sign Out</button>
+    </form>
+  </nav>
+</aside>

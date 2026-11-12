@@ -1,0 +1,76 @@
+{{> head}}
+<body class="flex flex-col min-h-screen bg-slate-50 text-slate-800">
+  {{> navbar}}
+  {{> alerts}}
+
+  <main class="flex-grow py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-6">
+    
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div class="flex items-center space-x-3">
+        <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 flex items-center justify-center text-xl shadow-sm">
+          <i class="fas fa-users-gear"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">User Accounts & Identity Access</h1>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Role hierarchy and stakeholder authorizations (Figure 2 User Class Inheritance & Figure 6 Package)
+          </p>
+        </div>
+      </div>
+      
+      <a href="/admin/users/create" class="px-4 py-2 rounded-lg bg-dali-700 hover:bg-dali-800 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 self-start sm:self-center">
+        <i class="fas fa-user-plus"></i> + Add User
+      </a>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
+              <th class="py-3.5 px-4">User ID</th>
+              <th class="py-3.5 px-4">Full Name</th>
+              <th class="py-3.5 px-4">Email Address</th>
+              <th class="py-3.5 px-4">Role Classification</th>
+              <th class="py-3.5 px-4">Badge / Branch Link</th>
+              <th class="py-3.5 px-4">Contact Phone</th>
+              <th class="py-3.5 px-4 text-right">Quick Switch</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {{#each users}}
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="py-3.5 px-4 font-mono font-bold text-slate-500">#{{this.id}}</td>
+                <td class="py-3.5 px-4 font-bold text-slate-900">{{this.fullName}}</td>
+                <td class="py-3.5 px-4 text-slate-600">{{this.email}}</td>
+                <td class="py-3.5 px-4">
+                  <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border
+                    {{#if (eq this.role 'ADMIN')}}bg-purple-50 text-purple-700 border-purple-200{{/if}}
+                    {{#if (eq this.role 'INSPECTOR')}}bg-cyan-50 text-cyan-700 border-cyan-200{{/if}}
+                    {{#if (eq this.role 'STORE_REP')}}bg-amber-50 text-amber-700 border-amber-200{{/if}}
+                  ">
+                    {{this.role}}
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-slate-600 font-mono">
+                  {{#if this.badgeNumber}}Badge: {{this.badgeNumber}}{{/if}}
+                  {{#if this.storeId}}Store #{{this.storeId}}{{/if}}
+                </td>
+                <td class="py-3.5 px-4 text-slate-500">{{this.phone}}</td>
+                <td class="py-3.5 px-4 text-right">
+                  <span class="text-xs text-slate-400">Active</span>
+                </td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  {{> footer}}
+</body>
+</html>

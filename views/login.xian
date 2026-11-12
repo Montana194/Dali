@@ -1,0 +1,48 @@
+{{> head}}
+<body class="bg-slate-50 min-h-screen flex flex-col justify-between">
+<div>
+  <a href="/" class="auth-brand">
+    <img src="/images/dali-logo.png" alt="DALI" style="height:42px;width:auto;">
+    DALIAudit<span>.</span>
+  </a>
+
+  <div class="flex justify-center mt-8 px-4">
+    <div class="w-full max-w-md">
+
+      {{#if success_msg}}<p class="admin-notice" role="status">{{success_msg}}</p>{{/if}}
+      {{#if error_msg}}<p class="admin-notice admin-notice-error" role="alert">{{error_msg}}</p>{{/if}}
+
+      <form class="admin-panel admin-user-form" method="POST" action="/login" style="padding:36px 32px;">
+        <input type="hidden" name="_csrf" value="{{shopToken}}">
+        <div style="text-align:center;margin-bottom:24px;">
+          <span class="eyebrow" style="display:block;margin-bottom:6px;">WELCOME BACK</span>
+          <h2 style="font-size:26px;font-weight:800;color:#0f172a;margin:0;">Sign In</h2>
+          <p style="font-size:15px;color:#475569;margin:6px 0 0;">Enter the email and password you used to register.</p>
+        </div>
+
+        <label for="login-email">Email Address</label>
+        <input id="login-email" type="email" name="email" placeholder="e.g. juan@dali.ph" required autocomplete="email" />
+
+        <label for="login-password">Password</label>
+        <input id="login-password" type="password" name="password" placeholder="Enter your password" required autocomplete="current-password" />
+
+        <button type="submit" class="hero-button" style="width:100%;padding:14px;font-size:15px;margin-top:6px;">
+          Sign In →
+        </button>
+
+        <p style="margin-top:16px;text-align:center;font-size:14px;">
+          <a href="/forgot-password" style="color:#475569;font-weight:600;text-decoration:underline;">Forgot your password?</a>
+        </p>
+
+        <p style="margin-top:10px;text-align:center;font-size:14.5px;color:#475569;">
+          New to DALIAudit? 
+          <a href="/register" style="color:var(--dali);font-weight:700;">Create an account</a>
+        </p>
+      </form>
+
+      <a href="/" class="auth-back">← Back to Home</a>
+    </div>
+  </div>
+</div>
+
+{{> footer }}

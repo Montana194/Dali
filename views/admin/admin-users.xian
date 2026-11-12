@@ -1,0 +1,104 @@
+{{> head}}
+<body class="flex flex-col min-h-screen bg-slate-50 text-slate-800">
+  {{> navbar}}
+  {{> alerts}}
+
+  <main class="flex-grow py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-6">
+    
+    <!-- Title & Add User Header (like act9 admin-users) -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div class="flex items-center space-x-3">
+        <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-700 border border-purple-200 flex items-center justify-center text-xl shadow-sm">
+          <i class="fas fa-users-gear"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">User Accounts & Roles</h1>
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-100 text-purple-800">Role-Based Access Control</span>
+          </div>
+          <p class="text-xs text-slate-500 mt-0.5">
+            Manage registered accounts, assigned system roles, branch associations, and access privileges.
+          </p>
+        </div>
+      </div>
+      
+      <a href="/admin/users/create" class="px-4 py-2 rounded-lg bg-dali-700 hover:bg-dali-800 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 self-start sm:self-center">
+        <i class="fas fa-user-plus"></i> + Add User
+      </a>
+    </div>
+
+    <!-- Users Table (like act9 admin-users) -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
+              <th scope="col" class="py-3.5 px-4">ID</th>
+              <th scope="col" class="py-3.5 px-4">Full Name</th>
+              <th scope="col" class="py-3.5 px-4">Email Address</th>
+              <th scope="col" class="py-3.5 px-4">Role Classification</th>
+              <th scope="col" class="py-3.5 px-4">Branch / Badge</th>
+              <th scope="col" class="py-3.5 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {{#each users}}
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="py-3.5 px-4 font-mono font-bold text-slate-500">#{{this.id}}</td>
+                <td class="py-3.5 px-4">
+                  <span class="font-bold text-slate-900">{{this.fullName}}</span>
+                  {{#if this.isSelf}}
+                    <span class="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700">Your Account</span>
+                  {{/if}}
+                </td>
+                <td class="py-3.5 px-4 text-slate-600 font-mono">{{this.email}}</td>
+                <td class="py-3.5 px-4">
+                  <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold border capitalize {{this.roleBadge}}">
+                    {{this.role}}
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-slate-600">
+                  {{#if this.badgeNumber}}
+                    <span class="font-mono text-slate-700 font-semibold">{{this.badgeNumber}}</span>
+                  {{/if}}
+                  {{#if this.store}}
+                    <span class="font-medium text-slate-800">{{this.store.name}}</span>
+                  {{/if}}
+                  {{#unless this.badgeNumber}}
+                    {{#unless this.store}}
+                      <span class="text-slate-400">—</span>
+                    {{/unless}}
+                  {{/unless}}
+                </td>
+                <td class="py-3.5 px-4 text-right">
+                  <div class="inline-flex items-center gap-2">
+                    <a href="/admin/users/{{this.id}}/edit" class="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] inline-flex items-center gap-1 transition-colors">
+                      <i class="fas fa-edit text-[10px]"></i> Edit
+                    </a>
+
+                    {{#unless this.isSelf}}
+                      <form method="POST" action="/admin/users/{{this.id}}/delete" onsubmit="return confirm('Are you sure you want to delete user &quot;{{this.fullName}}&quot;? This cannot be undone.');" class="inline">
+                        <input type="hidden" name="_csrf" value="{{../csrfToken}}">
+                        <button type="submit" class="px-2.5 py-1 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-[11px] inline-flex items-center gap-1 transition-colors">
+                          <i class="fas fa-trash text-[10px]"></i> Delete
+                        </button>
+                      </form>
+                    {{/unless}}
+                  </div>
+                </td>
+              </tr>
+            {{else}}
+              <tr>
+                <td colspan="6" class="py-8 text-center text-slate-400">No registered user accounts found.</td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  {{> footer}}
+</body>
+</html>

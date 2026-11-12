@@ -1,0 +1,106 @@
+{{> head}}
+<body class="storefront">
+{{> shop-nav}}
+
+<main class="shop-container">
+  <!-- Hero section -->
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">DALI STORE INSPECTION SYSTEM</p>
+      <h1>Clean stores.<br>Safe groceries.</h1>
+      <p>DALIAudit helps every DALI branch stay clean and food-safe. Inspectors check each store using one standard checklist, take photos as proof, and store teams fix any problems quickly.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <a class="hero-button" href="/account/login">Sign In <span>↗</span></a>
+        <a class="hero-button" href="/register" style="background:#ffffff;color:var(--dali);border:1.5px solid #f5d0e3;box-shadow:none;">Create an Account <span>→</span></a>
+      </div>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="orbit"></div>
+      <div class="art-tag">✓ Checked &amp; Approved</div>
+      <div class="shopping-bag bag-back">
+        <img src="/images/dali-logo.png" alt="DALI" style="width:84px;height:auto;object-fit:contain;">
+      </div>
+      <div class="shopping-bag bag-front">
+        <span>DALI.</span>
+        <small>AUDIT</small>
+      </div>
+      <span class="art-spark">✦</span>
+    </div>
+  </section>
+
+  <!-- Benefit strip -->
+  <div class="benefit-strip">
+    <div>
+      <span>01</span>
+      <strong>The Right Tools for Each Person</strong>
+      <p>Administrators, inspectors, and store representatives each get their own page with only the tools they need.</p>
+    </div>
+    <div>
+      <span>02</span>
+      <strong>Photo Proof for Every Check</strong>
+      <p>Every inspection and every fix is backed by dated photos, so nothing is missed or forgotten.</p>
+    </div>
+    <div>
+      <span>03</span>
+      <strong>Clear Scores &amp; Printable Reports</strong>
+      <p>Each store gets a score out of 100% and an official report that can be printed or shared.</p>
+    </div>
+  </div>
+
+  <!-- Stakeholder Portals Overview -->
+  <section class="catalog">
+    <div class="catalog-heading">
+      <div>
+        <p class="eyebrow">WHO USES DALIAUDIT</p>
+        <h2>Choose Your Workspace</h2>
+      </div>
+      <span>3 user types</span>
+    </div>
+
+    <div class="product-grid">
+      <!-- Admin Portal Card -->
+      <article class="product-card">
+        <div class="product-image" style="background:linear-gradient(135deg,#fdf2f8,#fce7f3);display:flex;align-items:center;justify-content:center;font-size:46px;color:#a00460;">
+          <i class="fas fa-shield-halved"></i>
+          <span class="product-badge">Management</span>
+        </div>
+        <div class="product-info">
+          <h3>Administrator</h3>
+          <p class="product-description">Approve new accounts, add store branches, set inspection dates, and view every inspection report.</p>
+          <p class="product-price">Runs the whole system</p>
+          <a class="add-button" href="/admin">Go to Admin Panel →</a>
+        </div>
+      </article>
+
+      <!-- Inspector Portal Card -->
+      <article class="product-card">
+        <div class="product-image" style="background:linear-gradient(135deg,#ecfeff,#cffafe);display:flex;align-items:center;justify-content:center;font-size:46px;color:#0e7490;">
+          <i class="fas fa-clipboard-check"></i>
+          <span class="product-badge">Inspections</span>
+        </div>
+        <div class="product-info">
+          <h3>Sanitation Inspector</h3>
+          <p class="product-description">Visit assigned stores, go through the checklist, record any problems found, and confirm when the store has fixed them.</p>
+          <p class="product-price" style="color:#0e7490 !important;">Checks the stores</p>
+          <a class="add-button" href="/inspector">Go to My Inspections →</a>
+        </div>
+      </article>
+
+      <!-- Store Rep Portal Card -->
+      <article class="product-card">
+        <div class="product-image" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);display:flex;align-items:center;justify-content:center;font-size:46px;color:#b45309;">
+          <i class="fas fa-store"></i>
+          <span class="product-badge">Store Team</span>
+        </div>
+        <div class="product-info">
+          <h3>Store Representative</h3>
+          <p class="product-description">Pick your branch, see the problems the inspector found, check the deadlines, and upload photos showing the fixes.</p>
+          <p class="product-price" style="color:#b45309 !important;">Fixes the problems</p>
+          <a class="add-button" href="/store">Go to My Store →</a>
+        </div>
+      </article>
+    </div>
+  </section>
+</main>
+
+{{> footer}}

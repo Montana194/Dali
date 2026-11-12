@@ -1,0 +1,188 @@
+{{> head}}
+<body class="flex flex-col min-h-screen bg-slate-50 text-slate-800">
+  {{> navbar}}
+  {{> alerts}}
+
+  <main class="flex-grow py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full space-y-8">
+    
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div class="flex items-center space-x-4">
+        <div class="w-14 h-14 rounded-2xl bg-purple-50 text-purple-700 border border-purple-200 flex items-center justify-center text-2xl shadow-sm">
+          <i class="fas fa-chart-pie"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Administrator Governance Portal</h1>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800 border border-purple-200">
+              Admin Role
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 mt-1">
+            DALI Everyday Grocery Quality Assurance & Operational Sanitation Compliance
+          </p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <a href="/admin/users" class="px-4 py-2 rounded-lg bg-purple-700 hover:bg-purple-800 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5">
+          <i class="fas fa-users-gear"></i> Manage Users & Roles
+        </a>
+        <a href="/admin/schedule" class="px-4 py-2 rounded-lg bg-dali-700 hover:bg-dali-800 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5">
+          <i class="fas fa-calendar-plus"></i> Schedule Inspection (REQ-2)
+        </a>
+        <a href="/admin/stores" class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-sm transition-all flex items-center gap-1.5">
+          <i class="fas fa-store"></i> Manage Stores (REQ-1)
+        </a>
+      </div>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Overall Compliance</p>
+          <h3 class="text-3xl font-black text-slate-900 mt-1">{{metrics.complianceRate}}%</h3>
+          <p class="text-[11px] text-emerald-600 font-semibold mt-1">
+            <i class="fas fa-check-double mr-1"></i> {{metrics.compliantStores}} of {{metrics.totalStores}} Stores Compliant
+          </p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+          <i class="fas fa-shield-halved"></i>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Audits</p>
+          <h3 class="text-3xl font-black text-slate-900 mt-1">{{metrics.totalInspections}}</h3>
+          <p class="text-[11px] text-blue-600 font-semibold mt-1">
+            <i class="fas fa-calendar mr-1"></i> {{metrics.scheduledInspections}} Scheduled Audits
+          </p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+          <i class="fas fa-clipboard-list"></i>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Pending Remediation</p>
+          <h3 class="text-3xl font-black text-amber-600 mt-1">{{metrics.pendingActions}}</h3>
+          <p class="text-[11px] text-slate-500 font-semibold mt-1">
+            <i class="fas fa-clock mr-1"></i> Corrective Actions Required
+          </p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+          <i class="fas fa-wrench"></i>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Noncompliant Branches</p>
+          <h3 class="text-3xl font-black text-rose-600 mt-1">{{metrics.noncompliantStores}}</h3>
+          <p class="text-[11px] text-rose-600 font-semibold mt-1">
+            <i class="fas fa-triangle-exclamation mr-1"></i> Active Violation Flags
+          </p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl">
+          <i class="fas fa-store-slash"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Inspections & Store Ranking -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Recent Inspections Table -->
+      <div class="lg:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <h3 class="font-bold text-slate-900">Recent Sanitation Inspections</h3>
+            <p class="text-xs text-slate-500">Live operational field audits across DALI network</p>
+          </div>
+          <a href="/admin/inspections" class="text-xs font-bold text-dali-700 hover:text-dali-800">
+            View All &rarr;
+          </a>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
+                <th class="py-3 px-4">Audit Code</th>
+                <th class="py-3 px-4">Store Branch</th>
+                <th class="py-3 px-4">Inspector</th>
+                <th class="py-3 px-4">Date</th>
+                <th class="py-3 px-4">Score</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              {{#each recentInspections}}
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                  <td class="py-3 px-4 font-mono font-bold text-slate-800">{{this.inspectionCode}}</td>
+                  <td class="py-3 px-4 font-medium text-slate-900">{{this.store.name}}</td>
+                  <td class="py-3 px-4 text-slate-600">{{this.inspector.fullName}}</td>
+                  <td class="py-3 px-4 text-slate-500">{{formatDate this.inspectionDate}}</td>
+                  <td class="py-3 px-4 font-bold {{scoreColor this.score}}">{{this.score}}%</td>
+                  <td class="py-3 px-4">{{statusBadge this.status}}</td>
+                  <td class="py-3 px-4 text-right space-x-1">
+                    <a href="/reports/view/{{this.id}}" class="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] inline-flex items-center gap-1">
+                      <i class="fas fa-file-lines text-[10px]"></i> Report
+                    </a>
+                  </td>
+                </tr>
+              {{else}}
+                <tr>
+                  <td colspan="7" class="py-6 text-center text-slate-400">No inspections recorded yet.</td>
+                </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Store Compliance Summary List -->
+      <div class="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+            <div>
+              <h3 class="font-bold text-slate-900">Branch Health</h3>
+              <p class="text-xs text-slate-500">Compliance Status (Figure 2 Store Class)</p>
+            </div>
+            <a href="/admin/stores" class="text-xs font-bold text-dali-700 hover:underline">Manage</a>
+          </div>
+
+          <div class="space-y-3">
+            {{#each stores}}
+              <div class="p-3 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 flex items-center justify-between">
+                <div>
+                  <h4 class="text-xs font-bold text-slate-900 leading-tight">{{this.name}}</h4>
+                  <p class="text-[10px] text-slate-500 mt-0.5">{{this.code}} &bull; {{this.city}}</p>
+                </div>
+                <div class="text-right">
+                  <div>{{statusBadge this.complianceStatus}}</div>
+                  <span class="text-[10px] font-semibold text-slate-400 mt-1 block">Rating: {{this.overallRating}}%</span>
+                </div>
+              </div>
+            {{/each}}
+          </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t border-slate-100">
+          <a href="/admin/stores" class="w-full py-2 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold flex items-center justify-center gap-2 transition-colors">
+            <i class="fas fa-store text-dali-700"></i> View All DALI Branches
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  {{> footer}}
+</body>
+</html>

@@ -1,0 +1,30 @@
+{{> head}}
+<body class="flex flex-col min-h-screen bg-slate-50 text-slate-800">
+  {{> navbar}}
+  {{> alerts}}
+
+  <main class="flex-grow flex items-center justify-center p-8">
+    <div class="max-w-md w-full bg-white p-8 rounded-2xl border border-slate-200 shadow-sm text-center space-y-4">
+      <div class="w-16 h-16 rounded-2xl bg-dali-50 text-dali-700 flex items-center justify-center mx-auto text-2xl">
+        <i class="fas fa-gauge-high"></i>
+      </div>
+      <h2 class="text-xl font-bold text-slate-900">Redirecting to Your Portal...</h2>
+      <p class="text-xs text-slate-500">Welcome to DALIAudit System. Access your dedicated portal below:</p>
+      
+      <div class="space-y-2 pt-2">
+        <a href="/admin/dashboard" class="block w-full py-2.5 px-4 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs">
+          Administrator Portal &rarr;
+        </a>
+        <a href="/inspector/dashboard" class="block w-full py-2.5 px-4 rounded-lg bg-cyan-700 hover:bg-cyan-800 text-white font-bold text-xs">
+          Sanitation Inspector Portal &rarr;
+        </a>
+        <a href="/store/dashboard" class="block w-full py-2.5 px-4 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs">
+          Store Representative Portal &rarr;
+        </a>
+      </div>
+    </div>
+  </main>
+
+  {{> footer}}
+</body>
+</html>

@@ -1,0 +1,103 @@
+<nav class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm no-print">
+  <div class="w-full px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-20">
+      <!-- Left side: Brand Logo & Title -->
+      <div class="flex items-center space-x-3.5">
+        <a href="/" class="flex items-center space-x-3 group">
+          <div class="h-11 w-11 rounded-xl overflow-hidden flex items-center justify-center p-1 bg-white border border-slate-200 shadow-sm group-hover:scale-105 transition-transform">
+            <img src="/images/dali-logo.png" alt="DALI Everyday Grocery Logo" class="h-full object-contain">
+          </div>
+          <div>
+            <div class="flex items-center space-x-1.5">
+              <span class="text-2xl font-black text-dali-700 tracking-tight">DALI</span>
+              <span class="text-2xl font-bold text-slate-800 tracking-tight">Audit</span>
+            </div>
+            <p class="text-sm text-slate-500 font-medium leading-none">Store Cleanliness &amp; Food Safety Inspections</p>
+          </div>
+        </a>
+
+        <!-- Role-Based Navigation Links (like act9) -->
+        <div class="hidden md:flex md:items-center md:space-x-1 ml-6">
+          <a href="/" class="px-3 py-2 text-sm font-semibold text-slate-600 hover:text-dali-700 hover:bg-slate-50 rounded-md transition-colors">
+            <i class="fas fa-home mr-1.5 text-slate-400"></i>Home
+          </a>
+
+          {{#if currentUser}}
+            {{#if isAdmin}}
+              <!-- Admin Role Portal Links -->
+              <a href="/admin" class="px-3 py-2 text-sm font-bold text-slate-800 hover:text-dali-700 hover:bg-dali-50 rounded-md">
+                <i class="fas fa-chart-pie mr-1 text-purple-600"></i>Dashboard
+              </a>
+              <a href="/admin/users" class="px-3 py-2 text-sm font-bold text-slate-800 hover:text-dali-700 hover:bg-dali-50 rounded-md">
+                <i class="fas fa-users mr-1 text-purple-600"></i>Users
+              </a>
+              <a href="/admin/stores" class="px-3 py-2 text-sm font-bold text-slate-800 hover:text-dali-700 hover:bg-dali-50 rounded-md">
+                <i class="fas fa-store mr-1 text-purple-600"></i>Stores
+              </a>
+              <a href="/admin/schedule" class="px-3 py-2 text-sm font-bold text-slate-800 hover:text-dali-700 hover:bg-dali-50 rounded-md">
+                <i class="fas fa-calendar-plus mr-1 text-purple-600"></i>Schedule
+              </a>
+              <a href="/admin/checklists" class="px-3 py-2 text-sm font-bold text-slate-800 hover:text-dali-700 hover:bg-dali-50 rounded-md">
+                <i class="fas fa-clipboard-check mr-1 text-purple-600"></i>Checklist
+              </a>
+              <a href="/admin/reports" class="px-3 py-2 text-sm font-bold text-slate-800 hover:text-dali-700 hover:bg-dali-50 rounded-md">
+                <i class="fas fa-file-contract mr-1 text-purple-600"></i>Reports
+              </a>
+            {{/if}}
+
+            {{#if isInspector}}
+              <!-- Inspector Role Portal Links -->
+              <a href="/inspector" class="px-3 py-2 text-sm font-bold text-cyan-800 hover:bg-cyan-50 rounded-md">
+                <i class="fas fa-clipboard-user mr-1 text-cyan-600"></i>My Inspections
+              </a>
+              <a href="/reports" class="px-3 py-2 text-sm font-bold text-slate-800 hover:text-cyan-700 hover:bg-cyan-50 rounded-md">
+                <i class="fas fa-file-lines mr-1 text-cyan-600"></i>Inspection Reports
+              </a>
+            {{/if}}
+
+            {{#if isStoreRep}}
+              <!-- Store Representative Role Portal Links -->
+              <a href="/store" class="px-3 py-2 text-sm font-bold text-amber-800 hover:bg-amber-50 rounded-md">
+                <i class="fas fa-shop-lock mr-1 text-amber-600"></i>My Store
+              </a>
+              <a href="/reports" class="px-3 py-2 text-sm font-bold text-slate-800 hover:text-amber-700 hover:bg-amber-50 rounded-md">
+                <i class="fas fa-certificate mr-1 text-amber-600"></i>Inspection Reports
+              </a>
+            {{/if}}
+          {{/if}}
+        </div>
+      </div>
+
+      <!-- Right Side: User Profile -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+
+        {{#if currentUser}}
+          <div class="flex items-center space-x-3">
+            <div class="text-right hidden sm:block">
+              <div class="text-sm font-bold text-slate-800 leading-none">{{currentUser.fullName}}</div>
+              <span class="text-xs font-bold px-2 py-0.5 rounded mt-1 inline-block
+                {{#if isAdmin}}bg-purple-100 text-purple-800{{/if}}
+                {{#if isInspector}}bg-cyan-100 text-cyan-800{{/if}}
+                {{#if isStoreRep}}bg-amber-100 text-amber-800{{/if}}
+              ">
+                {{roleLabel currentUser.role}}
+              </span>
+            </div>
+            
+            <!-- Logout Form with CSRF (matching act9) -->
+            <form method="POST" action="/logout" class="inline">
+              <input type="hidden" name="_csrf" value="{{csrfToken}}">
+              <button type="submit" class="inline-flex items-center px-3 py-2 text-sm font-bold text-slate-700 bg-slate-100 hover:bg-rose-50 hover:text-rose-700 border border-slate-200 rounded-md transition-colors">
+                <i class="fas fa-sign-out-alt mr-1.5"></i>Sign Out
+              </button>
+            </form>
+          </div>
+        {{else}}
+          <a href="/account/login" class="inline-flex items-center px-4 py-2 text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-md shadow-sm transition-colors">
+            Sign In
+          </a>
+        {{/if}}
+      </div>
+    </div>
+  </div>
+</nav>

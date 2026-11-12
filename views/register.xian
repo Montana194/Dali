@@ -1,0 +1,56 @@
+{{> head}}
+<body class="bg-slate-50 min-h-screen flex flex-col justify-between">
+<div>
+  <a href="/" class="auth-brand">
+    <img src="/images/dali-logo.png" alt="DALI" style="height:42px;width:auto;">
+    DALIAudit<span>.</span>
+  </a>
+
+  <div class="flex justify-center mt-8 px-4">
+    <div class="w-full max-w-md">
+
+      {{#if success_msg}}<p class="admin-notice" role="status">{{success_msg}}</p>{{/if}}
+      {{#if error_msg}}<p class="admin-notice admin-notice-error" role="alert">{{error_msg}}</p>{{/if}}
+
+      <form class="admin-panel admin-user-form" method="POST" action="/register" style="padding:36px 32px;">
+        <input type="hidden" name="_csrf" value="{{shopToken}}">
+        
+        <div style="text-align:center;margin-bottom:20px;">
+          <span class="eyebrow" style="display:block;margin-bottom:6px;">NEW USER</span>
+          <h2 style="font-size:26px;font-weight:800;color:#0f172a;margin:0;">Create an Account</h2>
+          <p style="font-size:15px;color:#475569;margin:6px 0 0;">Fill in your details to request access.</p>
+        </div>
+
+        <div style="background:#fff8ee;border:1px solid #fbd38d;border-radius:12px;padding:14px 16px;margin-bottom:20px;font-size:14px;color:#78350f;line-height:1.55;">
+          <strong><i class="fas fa-shield-halved mr-1"></i> Your account needs approval</strong><br>
+          After you register, an administrator will review your request and give you a role. You can sign in once your account is approved.
+        </div>
+
+        <label for="reg-name">Full Name</label>
+        <input id="reg-name" type="text" name="name" placeholder="e.g. Juan Dela Cruz" required autocomplete="name" />
+
+        <label for="reg-email">Email Address</label>
+        <input id="reg-email" type="email" name="email" placeholder="e.g. juan@dali.ph" required autocomplete="email" />
+
+        <label for="reg-password">Password</label>
+        <input id="reg-password" type="password" name="password" minlength="6" placeholder="At least 6 characters" required autocomplete="new-password" />
+
+        <label for="reg-phone">Mobile Number (optional)</label>
+        <input id="reg-phone" type="tel" name="phone" placeholder="e.g. 0917 123 4567" autocomplete="tel" />
+
+        <button type="submit" class="hero-button" style="width:100%;padding:14px;font-size:15px;margin-top:6px;">
+          Send Registration Request →
+        </button>
+
+        <p style="margin-top:20px;text-align:center;font-size:14.5px;color:#475569;">
+          Already have an account? 
+          <a href="/account/login" style="color:var(--dali);font-weight:700;">Sign in</a>
+        </p>
+      </form>
+
+      <a href="/" class="auth-back">← Back to Home</a>
+    </div>
+  </div>
+</div>
+
+{{> footer }}

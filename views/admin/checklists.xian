@@ -1,0 +1,104 @@
+{{> head}}
+<body class="storefront">
+{{> admin-header}}
+<div class="admin-shell">
+  {{> admin-sidebar}}
+  <main class="admin-content">
+    <div class="admin-title">
+      <div>
+        <p class="eyebrow">INSPECTION CHECKLIST</p>
+        <h1>Inspection Checklist Items</h1>
+      </div>
+      <button onclick="document.getElementById('addItemModal').classList.remove('hidden')" class="hero-button">+ Add Checklist Item</button>
+    </div>
+    <p class="admin-intro">These are the items inspectors check at every store. Each item is worth a set number of points toward the store's total score.</p>
+
+    {{#if success_msg}}<p class="admin-notice" role="status">{{success_msg}}</p>{{/if}}
+    {{#if error_msg}}<p class="admin-notice admin-notice-error" role="alert">{{error_msg}}</p>{{/if}}
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th scope="col" style="width:90px;">Item No.</th>
+            <th scope="col" style="width:230px;">Category</th>
+            <th scope="col" style="width:260px;">What to Check</th>
+            <th scope="col">How to Check It</th>
+            <th scope="col" style="width:105px;">Points</th>
+            <th scope="col" style="width:130px;">Importance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each items}}
+            <tr>
+              <td style="white-space:nowrap;"><strong>CS-{{#if (lt this.id 10)}}0{{/if}}{{this.id}}</strong></td>
+              <td><span class="quantity-pill category-pill">{{this.category}}</span></td>
+              <td><strong>{{this.requirement}}</strong></td>
+              <td><small style="margin-top:0;font-size:13.5px;line-height:1.55;">{{this.description}}</small></td>
+              <td style="white-space:nowrap;"><strong>{{this.weight}} pts</strong></td>
+              <td style="white-space:nowrap;">
+                <span class="quantity-pill {{#if (eq this.criticality 'Critical')}}crit-pill-critical{{else}}{{#if (eq this.criticality 'Major')}}crit-pill-major{{else}}crit-pill-minor{{/if}}{{/if}}">
+                  {{this.criticality}}
+                </span>
+              </td>
+            </tr>
+          {{else}}
+            <tr>
+              <td colspan="6">No checklist items yet. Click “+ Add Checklist Item” to add one.</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal for adding checklist item -->
+    <div id="addItemModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+          <h3 class="font-bold text-slate-900 text-lg">Add a Checklist Item</h3>
+          <button onclick="document.getElementById('addItemModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 text-lg" aria-label="Close">✕</button>
+        </div>
+
+        <form method="POST" action="/admin/checklists" class="admin-user-form space-y-3 text-sm">
+          <input type="hidden" name="_csrf" value="{{shopToken}}">
+          <label>Category</label>
+          <select name="category" required>
+            <option value="Cold Storage & Refrigeration">Cold Storage & Refrigeration</option>
+            <option value="Food Safety & Perishables">Food Safety & Perishables</option>
+            <option value="Store Cleanliness & Sanitation">Store Cleanliness & Sanitation</option>
+            <option value="Pest Management & Prevention">Pest Management & Prevention</option>
+            <option value="Personnel Hygiene & Protective Equipment">Personnel Hygiene & Protective Equipment</option>
+            <option value="Waste Disposal & Environmental Compliance">Waste Disposal & Environmental Compliance</option>
+          </select>
+
+          <label>What to Check</label>
+          <input type="text" name="requirement" placeholder="e.g. Freezers are at -18°C or colder" required>
+
+          <label>How to Check It</label>
+          <input type="text" name="description" placeholder="e.g. Read the freezer thermometer and check the temperature log" required>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <div>
+              <label>Points (1–25)</label>
+              <input type="number" name="weight" value="10" min="1" max="25" required>
+            </div>
+            <div>
+              <label>Importance</label>
+              <select name="criticality" required>
+                <option value="Major">Major</option>
+                <option value="Critical">Critical (most serious)</option>
+                <option value="Minor">Minor</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:14px;">
+            <button type="button" onclick="document.getElementById('addItemModal').classList.add('hidden')" class="edit-product-button">Cancel</button>
+            <button type="submit" class="hero-button">Save Item</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+{{> footer}}

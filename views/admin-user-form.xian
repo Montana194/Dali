@@ -1,0 +1,53 @@
+{{> head}}
+<body class="storefront">
+{{> admin-header}}
+<div class="admin-shell">
+  {{> admin-sidebar}}
+  <main class="admin-content admin-form">
+    <h1>{{#if editing}}Edit User{{else}}Add a New User{{/if}}</h1>
+    <p class="admin-intro">{{#if editing}}Update this person's details and what they are allowed to do.{{else}}Create an account for a staff member. They can sign in right away.{{/if}}</p>
+
+    {{#if error}}<p class="admin-notice admin-notice-error" role="alert">{{error}}</p>{{/if}}
+
+    <form class="admin-panel admin-user-form" method="POST" action="{{#if editing}}/admin/users/{{values.id}}/edit{{else}}/admin/users{{/if}}" style="max-width:720px;">
+      <input type="hidden" name="_csrf" value="{{shopToken}}">
+
+      <label for="user-name">Full Name</label>
+      <input id="user-name" name="name" type="text" value="{{values.fullName}}" maxlength="120" autocomplete="name" placeholder="e.g. Maria Santos" required>
+
+      <label for="user-email">Email Address</label>
+      <input id="user-email" name="email" type="email" value="{{values.email}}" maxlength="254" autocomplete="email" placeholder="e.g. msantos@dali.ph" required>
+
+      <label for="user-password">{{#if editing}}New Password (optional){{else}}Password{{/if}}</label>
+      <input id="user-password" name="password" type="password" minlength="6" maxlength="72" autocomplete="new-password" {{#unless editing}}required{{/unless}} aria-describedby="password-help" placeholder="••••••••">
+      <p id="password-help" class="field-help">Use at least 6 characters.{{#if editing}} Leave this blank to keep the current password.{{/if}}</p>
+
+      <label for="user-role">Role</label>
+      <select id="user-role" name="role" required {{#if isSelf}}disabled{{/if}}>
+        {{#each roles}}
+          <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+        {{/each}}
+      </select>
+      {{#if isSelf}}
+        <input type="hidden" name="role" value="admin">
+        <p class="field-help" style="color:var(--orange);font-weight:bold;">You cannot change your own role. Your account must stay an Administrator.</p>
+      {{/if}}
+      <p class="field-help"><strong>Administrator</strong> – manages everything. <strong>Sanitation Inspector</strong> – checks stores. <strong>Store Representative</strong> – fixes problems found in their store.</p>
+
+      <label for="user-store">Store Branch (for Store Representatives only)</label>
+      <select id="user-store" name="storeId">
+        <option value="">— No branch / Main Office —</option>
+        {{#each stores}}
+          <option value="{{this.id}}" {{#if (eq ../values.storeId this.id)}}selected{{/if}}>{{this.name}} ({{this.code}})</option>
+        {{/each}}
+      </select>
+      <p class="field-help">Choose the store this person works at. Leave blank if they can pick it themselves later.</p>
+
+      <div class="product-actions" style="margin-top:10px;">
+        <button type="submit" class="hero-button">{{#if editing}}Save Changes{{else}}Create User{{/if}}</button>
+        <a class="edit-product-button" href="/admin/users">Cancel</a>
+      </div>
+    </form>
+  </main>
+</div>
+{{> footer}}

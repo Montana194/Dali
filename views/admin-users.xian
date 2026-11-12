@@ -1,0 +1,173 @@
+{{> head}}
+<body class="storefront">
+{{> admin-header}}
+<div class="admin-shell">
+  {{> admin-sidebar}}
+  <main class="admin-content">
+    <div class="admin-title">
+      <h1>Users &amp; Roles</h1>
+      <a href="/admin/users/create" class="hero-button"><i class="fas fa-user-plus" style="margin-right:8px;font-size:13px;"></i>Add User</a>
+    </div>
+    <p class="admin-intro">Approve new sign-ups, give each person a role, and manage existing accounts.</p>
+
+    {{#if success_msg}}<p class="admin-notice" role="status"><i class="fas fa-check-circle" style="margin-right:8px;"></i>{{success_msg}}</p>{{/if}}
+    {{#if error_msg}}<p class="admin-notice admin-notice-error" role="alert"><i class="fas fa-exclamation-circle" style="margin-right:8px;"></i>{{error_msg}}</p>{{/if}}
+
+    {{#if pendingUsers.length}}
+      <!-- Pending Account Registrations Awaiting Confirmation & Role Assignment -->
+      <section class="pending-approvals-panel" aria-labelledby="pending-registrations-heading">
+        <div class="pending-panel-header">
+          <div>
+            <span class="pending-panel-eyebrow">Needs Your Approval</span>
+            <h2 id="pending-registrations-heading" class="pending-panel-title">New Account Requests ({{pendingUsers.length}})</h2>
+          </div>
+          <span class="pending-action-badge">
+            <i class="fas fa-clock"></i> Action Needed
+          </span>
+        </div>
+        <p class="pending-panel-desc">
+          These people have registered and are waiting to be approved. Pick a role for each one (and a store branch if they are a Store Representative), then click <strong>Approve</strong>. They can sign in right after.
+        </p>
+
+        <div class="pending-cards-list">
+          {{#each pendingUsers}}
+            <article class="pending-card">
+              <div class="pending-card-top">
+                <div class="pending-user-identity">
+                  <div class="pending-avatar" aria-hidden="true">{{this.initial}}</div>
+                  <div class="pending-user-details">
+                    <h3 class="pending-user-name">{{this.fullName}}</h3>
+                    <div class="pending-user-meta">
+                      <span class="pending-meta-item">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
+                        {{this.email}}
+                      </span>
+                      {{#if this.phone}}
+                        <span class="pending-meta-item">
+                          <i class="fas fa-phone" aria-hidden="true"></i>
+                          {{this.phone}}
+                        </span>
+                      {{/if}}
+                    </div>
+                  </div>
+                </div>
+                <span class="pending-status-badge">
+                  <i class="fas fa-hourglass-half" aria-hidden="true"></i> Waiting for Approval
+                </span>
+              </div>
+
+              <hr class="pending-card-divider">
+
+              <div class="pending-card-controls">
+                <form method="POST" action="/admin/users/{{this.id}}/approve" class="pending-approve-form">
+                  <input type="hidden" name="_csrf" value="{{../shopToken}}">
+
+                  <div class="pending-field pending-field-role">
+                    <label for="pending-role-{{this.id}}">Give This Person a Role</label>
+                    <select id="pending-role-{{this.id}}" name="role" required onchange="togglePendingBranch('{{this.id}}', this.value)">
+                      <option value="store_rep" selected>Store Representative</option>
+                      <option value="inspector">Sanitation Inspector</option>
+                      <option value="admin">Administrator</option>
+                    </select>
+                  </div>
+
+                  <div class="pending-field pending-field-branch" id="pending-branch-wrap-{{this.id}}">
+                    <label for="pending-store-{{this.id}}">Store Branch <span style="font-weight:600;color:#64748b;text-transform:none;letter-spacing:0;">(Optional)</span></label>
+                    <select id="pending-store-{{this.id}}" name="storeId">
+                      <option value="">— Let them choose later —</option>
+                      {{#each ../stores}}
+                        <option value="{{this.id}}">{{this.name}} ({{this.code}})</option>
+                      {{/each}}
+                    </select>
+                  </div>
+
+                  <button type="submit" class="btn-approve">
+                    <i class="fas fa-check-circle" aria-hidden="true"></i> Approve
+                  </button>
+                </form>
+
+                <form method="POST" action="/admin/users/{{this.id}}/reject" class="pending-reject-form" onsubmit="return confirm('Decline and delete the account request from &quot;{{this.fullName}}&quot;?');">
+                  <input type="hidden" name="_csrf" value="{{../shopToken}}">
+                  <button type="submit" class="btn-reject">
+                    <i class="fas fa-times" aria-hidden="true"></i> Decline
+                  </button>
+                </form>
+              </div>
+            </article>
+          {{/each}}
+        </div>
+      </section>
+    {{/if}}
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 14px;gap:12px;">
+      <h2 style="font-size:18px;font-weight:800;margin:0;color:#0f172a;">Active Accounts ({{users.length}})</h2>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th scope="col" style="width:68px;">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Email</th>
+            <th scope="col">Role</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each users}}
+            <tr>
+              <td style="font-weight:700;color:#64748b;">#{{this.id}}</td>
+              <td>
+                <strong>{{this.fullName}}</strong>
+                {{#if this.isSelf}}<small style="color:var(--dali);font-weight:700;">This is you</small>{{/if}}
+                {{#if this.store}}<small>Store: {{this.store.name}}</small>{{/if}}
+                {{#if this.badgeNumber}}<small>ID No.: {{this.badgeNumber}}</small>{{/if}}
+              </td>
+              <td>{{this.email}}</td>
+              <td>
+                <span class="quantity-pill {{this.rolePillClass}}">
+                  {{#if this.roleLabel}}{{this.roleLabel}}{{else}}{{this.role}}{{/if}}
+                </span>
+              </td>
+              <td>
+                <div class="product-actions">
+                  {{#if this.isAdminAccount}}
+                    <span class="quantity-pill" style="background:#f8fafc;color:#64748b;border-color:#e2e8f0;font-size:11.5px;font-weight:700;">
+                      <i class="fas fa-shield-alt" style="margin-right:6px;font-size:11px;color:#94a3b8;"></i>Protected – cannot be changed
+                    </span>
+                  {{else}}
+                    <a class="edit-product-button" href="/admin/users/{{this.id}}/edit">Edit</a>
+                    <form method="POST" action="/admin/users/{{this.id}}/delete" style="margin:0;" onsubmit="return confirm('Delete the account of &quot;{{this.fullName}}&quot;? This cannot be undone.');">
+                      <input type="hidden" name="_csrf" value="{{../shopToken}}">
+                      <button class="delete-product-button" type="submit">Delete</button>
+                    </form>
+                  {{/if}}
+                </div>
+              </td>
+            </tr>
+          {{else}}
+            <tr>
+              <td colspan="5">No active users yet.</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script>
+  function togglePendingBranch(userId, selectedRole) {
+    var wrap = document.getElementById("pending-branch-wrap-" + userId);
+    var select = document.getElementById("pending-store-" + userId);
+    if (!wrap) return;
+    if (selectedRole === "store_rep") {
+      wrap.style.display = "flex";
+    } else {
+      wrap.style.display = "none";
+      if (select) select.value = "";
+    }
+  }
+</script>
+{{> footer}}

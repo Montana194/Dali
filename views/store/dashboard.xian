@@ -1,0 +1,143 @@
+{{> head}}
+<body class="storefront">
+{{> shop-nav}}
+
+<div class="admin-shell">
+  <aside class="admin-sidebar">
+    <p class="eyebrow">STORE MENU</p>
+    <nav aria-label="Store navigation">
+      <a href="/store" style="background:#fdf2f8;color:var(--dali);font-weight:800;"><i class="fas fa-store" style="width:22px;opacity:0.9;"></i> My Store Dashboard</a>
+      <a href="/reports"><i class="fas fa-award" style="width:22px;opacity:0.75;"></i> Inspection Reports</a>
+      <a href="/"><i class="fas fa-arrow-up-right-from-square" style="width:22px;opacity:0.75;"></i> Home Page</a>
+      <form action="/logout" method="POST">
+        <input type="hidden" name="_csrf" value="{{shopToken}}">
+        <button type="submit"><i class="fas fa-right-from-bracket" style="width:22px;"></i> Sign Out</button>
+      </form>
+    </nav>
+  </aside>
+
+  <main class="admin-content">
+    <p class="eyebrow">STORE DASHBOARD</p>
+    <h1>{{store.name}}</h1>
+    <p class="admin-intro">{{store.address}} &bull; Branch Code: <strong>{{store.code}}</strong> &bull; Manager: {{store.managerName}}</p>
+
+    <!-- Assigned Branch Selection (Pamimilian ng Assign Branch) -->
+    <div style="background:#fff8ee;border:1.5px solid #fbd38d;border-radius:14px;padding:18px 22px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:260px;">
+        <span style="font-size:12px;font-weight:800;text-transform:uppercase;color:#a00460;letter-spacing:0.6px;display:block;">Assigned Store Branch</span>
+        {{#if hasAssignedBranch}}
+          <p style="margin:4px 0 0;font-size:14.5px;color:#1e293b;">
+            Your currently selected branch: <strong>{{store.name}}</strong> ({{store.code}} &bull; {{store.city}})
+          </p>
+        {{else}}
+          <p style="margin:4px 0 0;font-size:14.5px;color:#b45309;font-weight:700;">
+            ⚠️ You have not set an assigned branch yet. Please select your store branch from the list below:
+          </p>
+        {{/if}}
+      </div>
+      <form action="/store/select-branch" method="POST" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0;">
+        <input type="hidden" name="_csrf" value="{{shopToken}}">
+        <label for="storeId" style="font-size:13px;font-weight:700;color:#334155;">Select Branch:</label>
+        <select name="storeId" id="storeId" style="padding:10px 14px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:13.5px;background:white;font-weight:600;" required>
+          {{#each allStores}}
+            <option value="{{this.id}}" {{#if (eq this.id ../store.id)}}selected{{/if}}>
+              {{this.name}} ({{this.code}} - {{this.city}})
+            </option>
+          {{/each}}
+        </select>
+        <button type="submit" class="hero-button" style="padding:10px 18px;font-size:13px;">Save Branch</button>
+      </form>
+    </div>
+
+    {{#if success_msg}}<p class="admin-notice" role="status">{{success_msg}}</p>{{/if}}
+    {{#if error_msg}}<p class="admin-notice admin-notice-error" role="alert">{{error_msg}}</p>{{/if}}
+
+    <div class="admin-stats">
+      <a><span>Store Status</span><strong style="font-size:26px;">{{statusLabel store.complianceStatus}}</strong><small>Current cleanliness rating</small></a>
+      <a><span>Latest Score</span><strong style="color:var(--orange);">{{store.overallRating}}%</strong><small>Most recent audit score</small></a>
+      <a><span>Fixes Needed</span><strong style="color:#b45309;">{{pendingActions.length}}</strong><small>Items waiting for your proof</small></a>
+      <a><span>Past Audits</span><strong>{{inspections.length}}</strong><small>Total inspections logged</small></a>
+    </div>
+
+    <!-- Corrective Actions Section (REQ-5) -->
+    <section class="admin-panel" style="margin-bottom:28px;">
+      <h2>Action Items &amp; Problem Fixes</h2>
+      <p>Address any issues found during inspections by writing your action plan and uploading photos showing the fix.</p>
+
+      {{#each correctiveActions}}
+        <div style="background:#fdfcfb;border:1.5px solid #eae6df;border-radius:14px;padding:18px 20px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:260px;">
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <strong style="font-size:16px;color:#0f172a;">{{this.finding.title}}</strong>
+              <span class="quantity-pill" style="font-weight:700;background:#fee2e2;color:#991b1b;border-color:#fecdd3;">{{this.finding.severity}}</span>
+              <span class="quantity-pill">{{statusLabel this.status}}</span>
+            </div>
+            <p style="font-size:13.5px;color:#475569;margin:8px 0 6px;line-height:1.5;"><strong>Problem:</strong> {{this.finding.description}}</p>
+            <div style="font-size:13px;color:#b45309;font-weight:700;">
+              <i class="fas fa-calendar-day mr-1"></i> Due Date: {{formatDate this.dueDate}}
+            </div>
+            {{#if this.inspectorFeedback}}
+              <div style="margin-top:8px;font-size:13px;background:#f8fafc;padding:8px 12px;border-radius:8px;color:#334155;border:1px solid #e2e8f0;">
+                <strong>Inspector Note:</strong> {{this.inspectorFeedback}}
+              </div>
+            {{/if}}
+          </div>
+
+          <div class="product-actions">
+            {{#if (or (eq this.status 'Pending') (eq this.status 'Rejected'))}}
+              <a href="/store/actions/{{this.id}}" class="hero-button" style="padding:10px 18px;font-size:13.5px;">Submit Proof of Fix →</a>
+            {{else}}
+              <a href="/store/actions/{{this.id}}" class="edit-product-button" style="padding:10px 16px;font-size:13px;">View Submitted Proof</a>
+            {{/if}}
+          </div>
+        </div>
+      {{else}}
+        <div style="padding:20px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;color:#166534;font-weight:700;font-size:14.5px;">
+          <i class="fas fa-check-circle mr-2"></i> Great job! No pending action items. Your store has resolved all issues.
+        </div>
+      {{/each}}
+    </section>
+
+    <!-- Audit History Table -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:0 0 12px;">
+      <h2 style="font-size:18px;font-weight:800;margin:0;color:#0f172a;">Store Inspection History</h2>
+    </div>
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th scope="col">Inspection No.</th>
+            <th scope="col">Date</th>
+            <th scope="col">Inspector</th>
+            <th scope="col">Score</th>
+            <th scope="col">Status</th>
+            <th scope="col">Official Report</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each inspections}}
+            <tr>
+              <td><strong>{{this.inspectionCode}}</strong></td>
+              <td>{{formatDate this.inspectionDate}}</td>
+              <td>{{this.inspector.fullName}}</td>
+              <td><strong>{{this.score}}%</strong></td>
+              <td><span class="quantity-pill">{{statusLabel this.status}}</span></td>
+              <td>
+                <div class="product-actions">
+                  <a class="edit-product-button" href="/reports/view/{{this.id}}">View Report</a>
+                </div>
+              </td>
+            </tr>
+          {{else}}
+            <tr>
+              <td colspan="6">No previous inspections logged for this store branch.</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+{{> footer}}

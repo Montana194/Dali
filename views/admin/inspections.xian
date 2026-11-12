@@ -1,0 +1,64 @@
+{{> head}}
+<body class="storefront">
+{{> admin-header}}
+<div class="admin-shell">
+  {{> admin-sidebar}}
+  <main class="admin-content">
+    <div class="admin-title">
+      <div>
+        <p class="eyebrow">INSPECTION HISTORY</p>
+        <h1>All Inspections</h1>
+      </div>
+      <a href="/admin/schedule" class="hero-button">+ Schedule an Inspection</a>
+    </div>
+    <p class="admin-intro">Every inspection across all branches — its status, score, and report.</p>
+
+    {{#if success_msg}}<p class="admin-notice" role="status">{{success_msg}}</p>{{/if}}
+    {{#if error_msg}}<p class="admin-notice admin-notice-error" role="alert">{{error_msg}}</p>{{/if}}
+
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th scope="col">Inspection No.</th>
+            <th scope="col">Store</th>
+            <th scope="col">Inspector</th>
+            <th scope="col">Date</th>
+            <th scope="col">Status</th>
+            <th scope="col">Score</th>
+            <th scope="col">Report</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each inspections}}
+            <tr>
+              <td><strong>{{this.inspectionCode}}</strong></td>
+              <td><strong>{{this.store.name}}</strong></td>
+              <td>{{this.inspector.fullName}}</td>
+              <td>{{formatDate this.inspectionDate}}</td>
+              <td><span class="quantity-pill">{{statusLabel this.status}}</span></td>
+              <td><strong>{{this.score}}%</strong></td>
+              <td>
+                <div class="product-actions">
+                  {{#if this.report}}
+                    <a class="edit-product-button" href="/reports/view/{{this.report.id}}">View Report</a>
+                  {{else}}
+                    <form method="POST" action="/admin/reports/generate/{{this.id}}" class="inline">
+                      <input type="hidden" name="_csrf" value="{{../shopToken}}">
+                      <button class="edit-product-button" type="submit">Create Report</button>
+                    </form>
+                  {{/if}}
+                </div>
+              </td>
+            </tr>
+          {{else}}
+            <tr>
+              <td colspan="7">No inspections yet.</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+{{> footer}}

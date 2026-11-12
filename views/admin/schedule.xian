@@ -1,0 +1,89 @@
+{{> head}}
+<body class="storefront">
+{{> admin-header}}
+<div class="admin-shell">
+  {{> admin-sidebar}}
+  <main class="admin-content">
+    <p class="eyebrow">SCHEDULING</p>
+    <h1>Schedule an Inspection</h1>
+    <p class="admin-intro">Choose a store, assign an inspector, and pick a date for the visit.</p>
+
+    {{#if success_msg}}<p class="admin-notice" role="status">{{success_msg}}</p>{{/if}}
+    {{#if error_msg}}<p class="admin-notice admin-notice-error" role="alert">{{error_msg}}</p>{{/if}}
+
+    <div style="display:grid;grid-template-columns:340px minmax(0,1fr);gap:24px;align-items:start;">
+      <!-- Schedule Form Panel -->
+      <section class="admin-panel admin-user-form">
+        <h2>New Inspection</h2>
+        <p>Fill in the details below.</p>
+
+        <form method="POST" action="/admin/schedule">
+          <input type="hidden" name="_csrf" value="{{shopToken}}">
+
+          <label for="storeId">Store Branch</label>
+          <select id="storeId" name="storeId" required>
+            <option value="">— Choose a store —</option>
+            {{#each stores}}
+              <option value="{{this.id}}">{{this.name}} ({{this.code}})</option>
+            {{/each}}
+          </select>
+
+          <label for="inspectorId">Inspector</label>
+          <select id="inspectorId" name="inspectorId" required>
+            <option value="">— Choose an inspector —</option>
+            {{#each inspectors}}
+              <option value="{{this.id}}">{{this.fullName}}{{#if this.badgeNumber}} ({{this.badgeNumber}}){{/if}}</option>
+            {{else}}
+              <option value="" disabled>No inspectors yet – add one in Users &amp; Roles</option>
+            {{/each}}
+          </select>
+
+          <label for="scheduledDate">Inspection Date</label>
+          <input id="scheduledDate" type="date" name="scheduledDate" required>
+
+          <label for="notes">Notes for the Inspector (optional)</label>
+          <input id="notes" type="text" name="notes" placeholder="e.g. Please check the dairy chillers closely">
+
+          <button type="submit" class="hero-button" style="width:100%;margin-top:8px;">Schedule Inspection</button>
+        </form>
+      </section>
+
+      <!-- Scheduled Audits Table -->
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th scope="col">Inspection No.</th>
+              <th scope="col">Store</th>
+              <th scope="col">Inspector</th>
+              <th scope="col">Date</th>
+              <th scope="col">Status</th>
+              <th scope="col">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each inspections}}
+              <tr>
+                <td><strong>{{this.inspectionCode}}</strong></td>
+                <td>{{this.store.name}}</td>
+                <td>{{this.inspector.fullName}}</td>
+                <td>{{formatDate this.scheduledDate}}</td>
+                <td><span class="quantity-pill">{{statusLabel this.status}}</span></td>
+                <td>
+                  <div class="product-actions">
+                    <a class="edit-product-button" href="/reports/view/{{this.id}}">View Details</a>
+                  </div>
+                </td>
+              </tr>
+            {{else}}
+              <tr>
+                <td colspan="6">No inspections scheduled yet.</td>
+              </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+{{> footer}}
