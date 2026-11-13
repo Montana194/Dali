@@ -3,11 +3,15 @@
     DALI Everyday Grocery Quality & Safety Assurance
 */
 
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import path from "path";
 import session from "express-session";
 import flash from "connect-flash";
 import router from "./routes/index.js";
+import apiRouter from "./routes/api.js";
 import fs from "fs";
 import hbs from "hbs";
 import { fileURLToPath, pathToFileURL } from "url";
@@ -26,12 +30,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(process.cwd(), "public")));
 
+const isProduction = process.env.NODE_ENV === "production";
+const sessionSecret = process.env.SESSION_SECRET || "daliaudit-secure-session-key-2026";
+const sessionCookieName = process.env.SESSION_COOKIE_NAME || "daliaudit.sid";
+
 app.use(
   session({
-    secret: "daliaudit-secure-session-key-2026",
+    name: sessionCookieName,
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 24 * 60 * 60 * 1000 }
+    cookie: { 
+      maxAge: 24 * 60 * 60 * 1000,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: isProduction
+    }
   })
 );
 app.use(flash());
@@ -218,6 +232,9 @@ const registerPartialsDir = (dir) => {
 };
 
 registerPartialsDir(path.join(__dirname, "views/partials"));
+
+// Integration API Router
+app.use("/api/integration/v1", apiRouter);
 
 // Main Router
 app.use("/", router);

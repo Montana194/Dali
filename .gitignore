@@ -7,6 +7,7 @@ package-lock.json
 .env.local
 *.log
 npm-debug.log*
+*.sqlite
 
 # Uploads / user generated media
 uploads/
