@@ -86,16 +86,41 @@ DALIAudit provides authenticated integration endpoints for other DALITrack modul
 ```
 
 ### B. Standalone Stock Smoke Test (`integrations/stock-smoke-test.mjs`)
-When executed without a registered credential:
+Live test executed against target DALIStock at `http://10.183.59.144:3000`:
 ```text
+=================================================
+   DALIStock ↔ DALIAudit Integration Smoke Test  
+=================================================
 Target Base URL: http://10.183.59.144:3000
 Configured Branch: BR-001
-Has Token: NO
+Has Token: YES (masked)
 
-❌ ERROR: STOCK_API_TOKEN is missing in your environment!
-   Ask the DALIStock administrator to generate a credential with source 'DALIAudit' scoped to Calapan.
+1. Testing DALIStock Health endpoint (GET /api/integration/v1/health)...
+   [Response] {"system":"DALIStock","version":1,"source":"DALIAudit","status":"ready"}
+   ✅ Health confirmed: System=DALIStock, Source=DALIAudit, Status=ready
+
+2. Testing Branches endpoint (GET /api/integration/v1/branches)...
+   ✅ Retrieved 1 authorized branch(es):
+      - [BR-001] Calapan (Oriental Mindoro)
+   ✅ Authorized branch confirmed: [BR-001] Calapan
+
+3. Testing Product Catalog endpoint (GET /api/integration/v1/products)...
+   ✅ Retrieved 7 catalog product(s) (Page 1):
+      - SKU: DLI-001 | Golden Grains Rice | Category: Pantry essentials | Price: PHP 245
+      - SKU: DLI-002 | Daily Fresh Milk | Category: Dairy & chilled | Price: PHP 78
+      - SKU: DLI-005 | Clean Home Detergent | Category: Household | Price: PHP 89
+      - SKU: DLI-008 | Pure Drinking Water | Category: Beverages | Price: PHP 18
+      - SKU: DLI-011 | Everyday Bath Soap | Category: Personal care | Price: PHP 22
+      ... and 2 more items on this page.
+
+4. Confirming Read-Only Scope...
+   ✅ Audit client strictly consumes read-only GET endpoints (no inventory adjustment endpoints called).
+
+=================================================
+   🎉 DALIStock Integration Smoke Test PASSED!   
+=================================================
 ```
-*The smoke test fails safely and provides clear troubleshooting instructions without false positives.*
+*Live end-to-end communication confirmed across the two laptops.*
 
 ---
 
