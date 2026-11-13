@@ -33,7 +33,14 @@
           {{#each inspections}}
             <tr>
               <td><strong>{{this.inspectionCode}}</strong></td>
-              <td><strong>{{this.store.name}}</strong></td>
+              <td>
+                <strong>{{this.store.name}}</strong>
+                {{#if this.stockBranchCode}}
+                  <div style="font-size:11px;color:#9d174d;margin-top:2px;">
+                    <i class="fas fa-boxes-stacked"></i> Stock: <strong>{{this.stockBranchCode}}</strong>{{#if this.stockSku}} &bull; SKU: {{this.stockSku}}{{/if}}
+                  </div>
+                {{/if}}
+              </td>
               <td>{{this.inspector.fullName}}</td>
               <td>{{formatDate this.inspectionDate}}</td>
               <td><span class="quantity-pill">{{statusLabel this.status}}</span></td>

@@ -14,6 +14,11 @@
               Inspection {{inspection.inspectionCode}}
             </span>
             {{statusBadge inspection.status}}
+            {{#if inspection.stockBranchCode}}
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-950/80 text-rose-200 border border-rose-700/60 inline-flex items-center gap-1">
+                <i class="fas fa-boxes-stacked text-xs"></i> Stock: {{inspection.stockBranchCode}}{{#if inspection.stockSku}} ({{inspection.stockSku}}){{/if}}
+              </span>
+            {{/if}}
           </div>
           <h1 class="text-2xl font-black">{{inspection.store.name}}</h1>
           <p class="text-sm text-slate-300 mt-1">
@@ -129,6 +134,23 @@
                       placeholder="e.g. Temperature probe reading was 8.2°C; temperature sheet was missing 2 days of logs."
                       class="w-full p-2.5 text-sm border border-rose-300 rounded-xl bg-white outline-none focus:ring-2 focus:ring-rose-500 text-slate-800"
                     ></textarea>
+                  </div>
+
+                  <!-- Optional DALIStock Product SKU link -->
+                  <div class="pt-2 border-t border-rose-200">
+                    <label class="block font-bold text-rose-950 text-xs mb-1">
+                      <i class="fas fa-boxes-stacked text-rose-600 mr-1"></i> Associated Catalog Product / SKU (Optional)
+                    </label>
+                    <select 
+                      name="finding_sku_{{this.id}}" 
+                      class="w-full p-2 text-xs border border-rose-300 rounded-xl bg-white outline-none focus:ring-2 focus:ring-rose-500 text-slate-800"
+                    >
+                      <option value="">— General Area Sanitation (No Specific SKU) —</option>
+                      {{#each ../../stockProducts}}
+                        <option value="{{this.sku}}">[{{this.sku}}] {{this.name}} ({{this.category}})</option>
+                      {{/each}}
+                    </select>
+                    <p class="text-[11px] text-rose-700 mt-1">Select a catalog SKU only if this finding pertains to spoiled or improperly stored products.</p>
                   </div>
                 </div>
 

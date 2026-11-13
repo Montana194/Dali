@@ -46,7 +46,8 @@ export const Store = sequelize.define("Store", {
     defaultValue: "For Inspection" 
   },
   overallRating: { type: DataTypes.INTEGER, defaultValue: 100 },
-  lastInspectionDate: { type: DataTypes.DATE, allowNull: true }
+  lastInspectionDate: { type: DataTypes.DATE, allowNull: true },
+  stockBranchCode: { type: DataTypes.STRING, allowNull: true }
 });
 
 // ChecklistItem Model
@@ -92,7 +93,10 @@ export const Inspection = sequelize.define("Inspection", {
   passed: { type: DataTypes.BOOLEAN, defaultValue: true },
   notes: { type: DataTypes.TEXT, allowNull: true },
   findingsCount: { type: DataTypes.INTEGER, defaultValue: 0 },
-  completedAt: { type: DataTypes.DATE, allowNull: true }
+  completedAt: { type: DataTypes.DATE, allowNull: true },
+  stockBranchCode: { type: DataTypes.STRING, allowNull: true },
+  stockSku: { type: DataTypes.STRING, allowNull: true },
+  stockProductName: { type: DataTypes.STRING, allowNull: true }
 });
 
 // InspectionResponse Model
@@ -121,6 +125,8 @@ export const Finding = sequelize.define("Finding", {
   title: { type: DataTypes.STRING, allowNull: false },
   description: { type: DataTypes.TEXT, allowNull: false },
   deadline: { type: DataTypes.DATE, allowNull: true },
+  stockSku: { type: DataTypes.STRING, allowNull: true },
+  stockProductName: { type: DataTypes.STRING, allowNull: true },
   status: { 
     type: DataTypes.ENUM("Open", "In Remediation", "Submitted", "Verified", "Closed"), 
     defaultValue: "Open" 

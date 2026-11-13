@@ -24,6 +24,7 @@ const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || "0.0.0.0";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -244,10 +245,10 @@ sequelize.sync().catch(err => console.error("Database sync error:", err));
 
 export default app;
 
-export const startServer = (port = PORT) => {
+export const startServer = (port = PORT, host = HOST) => {
   return new Promise((resolve, reject) => {
-    const server = app.listen(port, () => {
-      console.log(`🚀 DALIAudit System running at http://localhost:${port}`);
+    const server = app.listen(port, host, () => {
+      console.log(`🚀 DALIAudit System running at http://${host}:${port}`);
       resolve(server);
     });
     server.on("error", reject);

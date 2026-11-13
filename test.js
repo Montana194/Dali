@@ -90,31 +90,41 @@ async function runTests() {
   };
 
   try {
-    // 3. Health check test
-    const healthRes = await request("/api/integration/v1/health");
-    if (healthRes.status !== 200 || healthRes.json?.status !== "healthy") {
-      throw new Error(`Health check failed: ${JSON.stringify(healthRes)}`);
-    }
-    console.log("✅ Health endpoint GET /api/integration/v1/health: 200 OK & healthy.");
+    const validToken = process.env.INTEGRATION_API_KEY || "daliaudit-integration-key-2026";
 
-    // 4. Auth header rejection test
+    // 3. Health check test - unauthenticated must be rejected with 401
+    const unauthHealth = await request("/api/integration/v1/health");
+    if (unauthHealth.status !== 401) {
+      throw new Error(`Expected 401 for unauthenticated /health, got: ${unauthHealth.status}`);
+    }
+    console.log("✅ Unauthenticated /health correctly rejected with 401.");
+
+    // 4. Health check test - authenticated with X-API-Key
+    const healthRes = await request("/api/integration/v1/health", {
+      headers: { "X-API-Key": validToken }
+    });
+    if (healthRes.status !== 200 || healthRes.json?.status !== "ready" || !healthRes.json?.ok) {
+      throw new Error(`Health check with X-API-Key failed: ${JSON.stringify(healthRes)}`);
+    }
+    console.log("✅ Authenticated GET /api/integration/v1/health (X-API-Key): 200 OK & status ready.");
+
+    // 5. Auth header rejection test on /stores
     const unauthRes = await request("/api/integration/v1/stores");
     if (unauthRes.status !== 401) {
-      throw new Error(`Expected 401 for missing token, got: ${unauthRes.status}`);
+      throw new Error(`Expected 401 for missing token on /stores, got: ${unauthRes.status}`);
     }
-    console.log("✅ Unauthenticated request correctly rejected with 401.");
+    console.log("✅ Unauthenticated request to /stores correctly rejected with 401.");
 
-    // 5. Invalid token rejection test
+    // 6. Invalid token rejection test
     const invalidAuthRes = await request("/api/integration/v1/stores", {
       headers: { Authorization: "Bearer wrong-token" }
     });
-    if (invalidAuthRes.status !== 403) {
-      throw new Error(`Expected 403 for wrong token, got: ${invalidAuthRes.status}`);
+    if (invalidAuthRes.status !== 401 && invalidAuthRes.status !== 403) {
+      throw new Error(`Expected 401/403 for wrong token, got: ${invalidAuthRes.status}`);
     }
-    console.log("✅ Invalid token correctly rejected with 403.");
+    console.log("✅ Invalid token correctly rejected with 401.");
 
-    // 6. Valid token test
-    const validToken = process.env.INTEGRATION_API_KEY || "daliaudit-integration-key-2026";
+    // 7. Valid Bearer token test on /stores
     const authRes = await request("/api/integration/v1/stores", {
       headers: { Authorization: `Bearer ${validToken}` }
     });
@@ -144,6 +154,41 @@ async function runTests() {
       throw new Error(`Complaint referral failed: status ${complaintRes.status}, body: ${JSON.stringify(complaintRes.json)}`);
     }
     console.log("✅ POST /api/integration/v1/complaints/referral: 201 Created & receipt issued.");
+
+    // 8. DALIStock Client & Model Field persistence test
+    const { DaliStockClient } = await import("./integrations/dalistock-client.mjs");
+    const testStockClient = new DaliStockClient({ baseUrl: "http://127.0.0.1:3999", token: validToken });
+    if (typeof testStockClient.health !== "function" || typeof testStockClient.branches !== "function" || typeof testStockClient.products !== "function") {
+      throw new Error("DaliStockClient is missing required methods.");
+    }
+    console.log("✅ DaliStockClient verified: health, branches, products methods present.");
+
+    const { Inspection, User } = await import("./models/index.js");
+    const testInspector = await User.findOne() || await User.create({
+      fullName: "Test Inspector",
+      email: "test.inspector@dali.ph",
+      password: "hashedpassword",
+      role: "inspector"
+    });
+
+    const testInspection = await Inspection.create({
+      inspectionCode: `TEST-INS-${Date.now()}`,
+      storeId: sampleStore.id,
+      inspectorId: testInspector.id,
+      status: "Scheduled",
+      stockBranchCode: "BR-001",
+      stockSku: "SKU-DALI-MILK-001",
+      stockProductName: "Fresh Milk 1L"
+    });
+
+    const fetched = await Inspection.findByPk(testInspection.id);
+    if (fetched.stockBranchCode !== "BR-001" || fetched.stockSku !== "SKU-DALI-MILK-001") {
+      throw new Error(`Stock fields failed to persist on Inspection! Got: ${fetched.stockBranchCode}, ${fetched.stockSku}`);
+    }
+    console.log(`✅ Inspection record persisted DALIStock references: branchCode=${fetched.stockBranchCode}, sku=${fetched.stockSku}`);
+
+    // Cleanup test inspection
+    await testInspection.destroy();
 
     console.log("🎉 All DALIAudit integration & smoke tests passed successfully!");
   } finally {

@@ -57,6 +57,12 @@
           <div class="text-slate-600"><i class="fas fa-location-dot mr-1 text-slate-400"></i> {{report.store.address}}</div>
           <div class="text-slate-600">Branch Code: <strong>{{report.store.code}}</strong> &bull; Region: {{report.store.region}}</div>
           <div class="text-slate-600">Store Manager: <strong>{{report.store.managerName}}</strong></div>
+          {{#if report.inspection.stockBranchCode}}
+            <div class="text-xs text-rose-900 font-semibold bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200 mt-2 inline-flex items-center gap-1.5">
+              <i class="fas fa-boxes-stacked text-rose-600"></i> DALIStock Link: Branch <strong>{{report.inspection.stockBranchCode}}</strong>
+              {{#if report.inspection.stockSku}} &bull; SKU: <strong>{{report.inspection.stockSku}}</strong>{{#if report.inspection.stockProductName}} ({{report.inspection.stockProductName}}){{/if}}{{/if}}
+            </div>
+          {{/if}}
         </div>
 
         <div class="space-y-1.5 sm:border-l sm:border-slate-200 sm:pl-6">
@@ -157,7 +163,14 @@
             {{#each report.inspection.findings}}
               <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 text-sm space-y-2">
                 <div class="flex items-center justify-between">
-                  <div class="font-bold text-slate-900">{{this.title}}</div>
+                  <div class="font-bold text-slate-900">
+                    {{this.title}}
+                    {{#if this.stockSku}}
+                      <span class="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                        <i class="fas fa-barcode"></i> SKU: {{this.stockSku}}{{#if this.stockProductName}} ({{this.stockProductName}}){{/if}}
+                      </span>
+                    {{/if}}
+                  </div>
                   <div class="flex items-center gap-2">
                     {{severityBadge this.severity}}
                     {{statusBadge this.status}}

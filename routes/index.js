@@ -18,6 +18,8 @@ import {
   getSchedulePage,
   createInspectionSchedule,
   getAllInspections,
+  getIntegrationsPage,
+  testStockConnection,
 } from "../controllers/adminController.js";
 import {
   adminUsers,
@@ -120,6 +122,10 @@ router.post("/admin/schedule", verifyShopToken, asyncRoute(createInspectionSched
 router.get("/admin/inspections", asyncRoute(getAllInspections));
 router.get("/admin/reports", asyncRoute(getReportsList));
 router.post("/admin/reports/generate/:inspectionId", verifyShopToken, asyncRoute(generateReportForInspection));
+
+// DALIStock Integration Settings
+router.get("/admin/integrations", asyncRoute(getIntegrationsPage));
+router.post("/admin/integrations/test-stock", verifyShopToken, asyncRoute(testStockConnection));
 
 // -------------------------------------------------------------
 // Inspector Role Portal (/inspector/*) - requireLogin, requireInspector

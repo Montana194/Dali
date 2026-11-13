@@ -9,6 +9,7 @@ import {
   Evidence, 
   ComplianceReport 
 } from "../models/index.js";
+import stockService from "../services/stockService.js";
 
 // Inspector Dashboard
 export const getInspectorDashboard = async (req, res) => {
@@ -112,10 +113,15 @@ export const getConductInspection = async (req, res) => {
       items: categoriesMap[name]
     }));
 
+    // Fetch DALIStock catalog for optional SKU attachment to findings
+    const stockProductData = await stockService.getCatalogProducts({ page: 1, limit: 100 });
+
     res.render("inspector/conduct", {
       title: `Sanitation Inspection ${inspection.inspectionCode} - DALIAudit`,
       inspection,
-      categories
+      categories,
+      stockProducts: stockProductData.products || [],
+      stockLive: stockProductData.isLive
     });
   } catch (error) {
     console.error("Error opening checklist:", error);
@@ -150,9 +156,11 @@ export const submitInspectionResponses = async (req, res) => {
       const remarksKey = `remarks_${item.id}`;
       const findingTitleKey = `finding_title_${item.id}`;
       const findingSeverityKey = `finding_severity_${item.id}`;
+      const findingSkuKey = `finding_sku_${item.id}`;
 
       const result = req.body[resultKey] || "Compliant";
       const remarks = req.body[remarksKey] || "";
+      const findingSku = req.body[findingSkuKey] || null;
 
       let scoreAwarded = 0;
       if (result === "Compliant") {
@@ -166,7 +174,8 @@ export const submitInspectionResponses = async (req, res) => {
           itemId: item.id,
           title: req.body[findingTitleKey] || `Violation: ${item.requirement}`,
           severity: req.body[findingSeverityKey] || item.criticality || "Major",
-          description: remarks || `Failure to satisfy sanitation standard: ${item.requirement}`
+          description: remarks || `Failure to satisfy sanitation standard: ${item.requirement}`,
+          stockSku: findingSku
         });
       }
 
@@ -205,6 +214,18 @@ export const submitInspectionResponses = async (req, res) => {
     if (hasViolations) {
       // Create findings and corrective actions
       for (const nf of noncompliantFindings) {
+        let stockProductName = null;
+        if (nf.stockSku) {
+          try {
+            const val = await stockService.validateSelection(inspection.stockBranchCode, nf.stockSku);
+            if (val.product) {
+              stockProductName = val.product.name;
+            }
+          } catch (e) {
+            // graceful fallback
+          }
+        }
+
         const finding = await Finding.create({
           inspectionId: inspection.id,
           itemId: nf.itemId,
@@ -212,7 +233,9 @@ export const submitInspectionResponses = async (req, res) => {
           title: nf.title,
           description: nf.description,
           deadline: new Date(Date.now() + (nf.severity === "Critical" ? 2 : 5) * 86400000),
-          status: "Open"
+          status: "Open",
+          stockSku: nf.stockSku || null,
+          stockProductName
         });
 
         // Find store representative for this store
@@ -258,6 +281,19 @@ export const submitInspectionResponses = async (req, res) => {
         },
         { where: { id: inspection.storeId } }
       );
+    }
+
+    if (req.body.stockBranchCode) {
+      inspection.stockBranchCode = req.body.stockBranchCode;
+    }
+    if (req.body.stockSku) {
+      inspection.stockSku = req.body.stockSku;
+      try {
+        const val = await stockService.validateSelection(inspection.stockBranchCode, req.body.stockSku);
+        if (val.product) {
+          inspection.stockProductName = val.product.name;
+        }
+      } catch (e) {}
     }
 
     inspection.score = finalScore;

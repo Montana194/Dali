@@ -3,31 +3,60 @@ import { Store, Inspection, Finding, CorrectiveAction, ComplianceReport, User } 
 
 const router = express.Router();
 
-// Middleware: API Key / Authorization Header Verification
+// Middleware: API Key / Authorization Header Verification (supports X-API-Key and Bearer token)
 export const verifyIntegrationAuth = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const expectedKey = process.env.INTEGRATION_API_KEY || "daliaudit-integration-key-2026";
-  
-  if (!authHeader) {
-    return res.status(401).json({ error: "Missing Authorization header." });
+  const expectedKey = process.env.INTEGRATION_API_KEY;
+  if (!expectedKey) {
+    return res.status(401).json({
+      error: { code: "UNAUTHORIZED", message: "Integration API key not configured on server." }
+    });
   }
 
-  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
-  if (token !== expectedKey) {
-    return res.status(403).json({ error: "Invalid integration API token." });
+  const xApiKey = req.headers["x-api-key"];
+  const authHeader = req.headers.authorization;
+  let providedKey = null;
+
+  if (xApiKey) {
+    providedKey = String(xApiKey).trim();
+  } else if (authHeader) {
+    providedKey = authHeader.replace(/^Bearer\s+/i, "").trim();
+  }
+
+  if (!providedKey) {
+    return res.status(401).json({
+      error: { code: "UNAUTHORIZED", message: "Missing Authorization header or X-API-Key." }
+    });
+  }
+
+  if (providedKey !== expectedKey) {
+    return res.status(401).json({
+      error: { code: "UNAUTHORIZED", message: "Invalid integration API key." }
+    });
   }
 
   next();
 };
 
-// GET /api/integration/v1/health
-router.get("/health", (req, res) => {
-  res.json({
-    module: "DALIAudit",
-    status: "healthy",
-    version: "1.0.0",
-    timestamp: new Date().toISOString()
-  });
+// GET /api/integration/v1/health - Authenticated Readiness & Dependency Probe
+router.get("/health", verifyIntegrationAuth, async (req, res) => {
+  try {
+    const { sequelize } = await import("../models/index.js");
+    await sequelize.authenticate();
+    res.json({
+      ok: true,
+      service: "DALIAudit",
+      schemaVersion: 1,
+      status: "ready"
+    });
+  } catch (error) {
+    res.status(503).json({
+      ok: false,
+      service: "DALIAudit",
+      schemaVersion: 1,
+      status: "unavailable",
+      error: { code: "DATABASE_UNAVAILABLE", message: error.message }
+    });
+  }
 });
 
 // GET /api/integration/v1/stores - Branch compliance lookup

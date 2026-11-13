@@ -7,6 +7,7 @@ import {
   CorrectiveAction, 
   ComplianceReport 
 } from "../models/index.js";
+import stockService from "../services/stockService.js";
 
 // Modeled after act9 adminDashboard
 export async function adminDashboard(req, res) {
@@ -137,11 +138,22 @@ export const getSchedulePage = async (req, res) => {
       ]
     });
 
+    // Fetch DALIStock branches and product catalog with graceful fallback
+    const [stockBranchData, stockProductData] = await Promise.all([
+      stockService.getPermittedBranches(),
+      stockService.getCatalogProducts({ page: 1, limit: 100 })
+    ]);
+
     res.render("admin/schedule", {
       title: "Schedule Sanitation Inspection - DALIAudit",
       stores,
       inspectors,
-      inspections
+      inspections,
+      stockBranches: stockBranchData.branches || [],
+      stockProducts: stockProductData.products || [],
+      stockLive: stockBranchData.isLive,
+      stockStale: stockBranchData.isStale,
+      stockFallback: stockBranchData.isFallback
     });
   } catch (error) {
     req.flash("error_msg", "Error loading schedule page.");
@@ -151,9 +163,29 @@ export const getSchedulePage = async (req, res) => {
 
 export const createInspectionSchedule = async (req, res) => {
   try {
-    const { storeId, inspectorId, scheduledDate, notes } = req.body;
+    const { storeId, inspectorId, scheduledDate, notes, stockBranchCode, stockSku } = req.body;
     const count = await Inspection.count();
     const code = `INS-2026-${String(count + 1).padStart(3, "0")}`;
+
+    // Validate references if provided
+    let stockProductName = null;
+    let finalBranchCode = stockBranchCode || null;
+
+    if (!finalBranchCode && storeId) {
+      const selectedStore = await Store.findByPk(storeId);
+      finalBranchCode = selectedStore?.stockBranchCode || selectedStore?.code || null;
+    }
+
+    if (stockSku) {
+      const validation = await stockService.validateSelection(finalBranchCode, stockSku);
+      if (!validation.valid) {
+        req.flash("error_msg", validation.error);
+        return res.redirect("/admin/schedule");
+      }
+      if (validation.product) {
+        stockProductName = validation.product.name;
+      }
+    }
 
     await Inspection.create({
       inspectionCode: code,
@@ -164,7 +196,10 @@ export const createInspectionSchedule = async (req, res) => {
       notes: notes || "Standard store sanitation and food safety compliance audit.",
       score: 0,
       totalPoints: 100,
-      earnedPoints: 0
+      earnedPoints: 0,
+      stockBranchCode: finalBranchCode,
+      stockSku: stockSku || null,
+      stockProductName
     });
 
     req.flash("success_msg", `Inspection ${code} successfully scheduled and assigned!`);
@@ -195,5 +230,41 @@ export const getAllInspections = async (req, res) => {
   } catch (error) {
     req.flash("error_msg", "Error loading inspections.");
     res.redirect("/admin");
+  }
+};
+
+// DALIStock Integration Management
+export const getIntegrationsPage = async (req, res) => {
+  try {
+    const testResult = req.session.stockTestResult || null;
+    res.render("admin/integrations", {
+      title: "DALIStock Integration - DALIAudit",
+      stockUrl: process.env.STOCK_API_BASE_URL || "http://10.183.59.144:3000",
+      stockBranch: process.env.STOCK_BRANCH_CODE || "BR-001",
+      hasToken: Boolean(process.env.STOCK_API_TOKEN),
+      port: process.env.PORT || 3000,
+      testResult
+    });
+  } catch (error) {
+    req.flash("error_msg", "Error loading integrations page.");
+    res.redirect("/admin");
+  }
+};
+
+export const testStockConnection = async (req, res) => {
+  try {
+    const result = await stockService.checkConnection();
+    req.session.stockTestResult = result;
+
+    if (result.ok) {
+      req.flash("success_msg", `DALIStock connection verified! Target: ${result.system}, Authenticated Source: ${result.source}`);
+    } else {
+      req.flash("error_msg", `DALIStock connection failed: ${result.error}`);
+    }
+
+    res.redirect("/admin/integrations");
+  } catch (error) {
+    req.flash("error_msg", "Unexpected error testing connection: " + error.message);
+    res.redirect("/admin/integrations");
   }
 };
