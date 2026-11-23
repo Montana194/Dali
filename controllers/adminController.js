@@ -246,7 +246,7 @@ export const getIntegrationsPage = async (req, res) => {
       hasToken: Boolean(process.env.STOCK_API_TOKEN),
       posUrl: process.env.DALI_POS_BASE_URL || "http://127.0.0.1:3000",
       hasPosToken: Boolean(process.env.DALI_POS_INTEGRATION_TOKEN),
-      port: process.env.PORT || 3003,
+      port: process.env.PORT || 3004,
       testResult,
       posTestResult
     });

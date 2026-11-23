@@ -10,7 +10,7 @@
 | Service | Port | Local Base URL | Primary Role |
 | :--- | :--- | :--- | :--- |
 | **DALI POS** | `3000` | `http://127.0.0.1:3000` | Point of Sale, Inventory Catalog, and Sales Transactions |
-| **DALIAudit** | `3003` | `http://127.0.0.1:3003` | Store Sanitation, Food Safety Audit, and Compliance Management |
+| **DALIAudit** | `3004` | `http://127.0.0.1:3004` | Store Sanitation, Food Safety Audit, and Compliance Management |
 
 > **Architectural Boundary:**  
 > - Each system manages its own MySQL database. **DALIAudit and DALI POS must never connect directly to each other's database.**  
@@ -31,7 +31,7 @@ PORT=3000
 DALI_POS_INTEGRATION_TOKEN=puYZxd3jo5xAyoqV5PjgDdmM-5qfDsSRkEJ-sZoyO9Q
 
 # 2. DALIAudit Outbound Connection:
-DALIAUDIT_BASE_URL=http://127.0.0.1:3003
+DALIAUDIT_BASE_URL=http://127.0.0.1:3004
 DALIAUDIT_API_TOKEN=oZh1fMRqnYFVySSdPhITpodaihiK4nCrhCgbnjYMTwc
 ```
 
@@ -51,7 +51,7 @@ Accept: application/json
 
 ## 4. Published DALIAudit API Endpoints
 
-All endpoints are hosted at `http://127.0.0.1:3003`:
+All endpoints are hosted at `http://127.0.0.1:3004`:
 
 ### Endpoint 1: Health & Readiness Probe
 * **Route:** `GET /api/health` *(also available at `/api/integration/v1/health`)*
@@ -240,7 +240,7 @@ Accept: application/json
 ```powershell
 $token = "oZh1fMRqnYFVySSdPhITpodaihiK4nCrhCgbnjYMTwc"
 Invoke-RestMethod `
-  -Uri "http://127.0.0.1:3003/api/health" `
+  -Uri "http://127.0.0.1:3004/api/health" `
   -Headers @{ Authorization = "Bearer $token"; Accept = "application/json" }
 ```
 **Expected Output:**
@@ -266,7 +266,7 @@ Invoke-RestMethod `
 ## 8. Summary Checklist for DALI POS Team
 
 - [ ] Paste `DALI_POS_INTEGRATION_TOKEN` into your `.env`.
-- [ ] Set `DALIAUDIT_BASE_URL=http://127.0.0.1:3003` in your `.env`.
+- [ ] Set `DALIAUDIT_BASE_URL=http://127.0.0.1:3004` in your `.env`.
 - [ ] Set `DALIAUDIT_API_TOKEN=oZh1fMRqnYFVySSdPhITpodaihiK4nCrhCgbnjYMTwc` in your `.env`.
 - [ ] Start DALI POS on Port `3000`.
 - [ ] Run the PowerShell smoke check to confirm `200 OK` from DALIAudit.
