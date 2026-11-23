@@ -20,6 +20,7 @@ import {
   getAllInspections,
   getIntegrationsPage,
   testStockConnection,
+  testPosConnection,
 } from "../controllers/adminController.js";
 import {
   adminUsers,
@@ -123,9 +124,10 @@ router.get("/admin/inspections", asyncRoute(getAllInspections));
 router.get("/admin/reports", asyncRoute(getReportsList));
 router.post("/admin/reports/generate/:inspectionId", verifyShopToken, asyncRoute(generateReportForInspection));
 
-// DALIStock Integration Settings
+// DALIStock & DALI POS Integration Settings
 router.get("/admin/integrations", asyncRoute(getIntegrationsPage));
 router.post("/admin/integrations/test-stock", verifyShopToken, asyncRoute(testStockConnection));
+router.post("/admin/integrations/test-pos", verifyShopToken, asyncRoute(testPosConnection));
 
 // -------------------------------------------------------------
 // Inspector Role Portal (/inspector/*) - requireLogin, requireInspector

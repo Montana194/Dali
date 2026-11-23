@@ -236,6 +236,8 @@ registerPartialsDir(path.join(__dirname, "views/partials"));
 
 // Integration API Router
 app.use("/api/integration/v1", apiRouter);
+app.use("/api/v1", apiRouter);
+app.use("/api", apiRouter);
 
 // Main Router
 app.use("/", router);

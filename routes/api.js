@@ -5,8 +5,12 @@ const router = express.Router();
 
 // Middleware: API Key / Authorization Header Verification (supports X-API-Key and Bearer token)
 export const verifyIntegrationAuth = (req, res, next) => {
-  const expectedKey = process.env.INTEGRATION_API_KEY;
-  if (!expectedKey) {
+  const allowedKeys = [
+    process.env.DALIAUDIT_API_TOKEN,
+    process.env.INTEGRATION_API_KEY
+  ].filter(Boolean);
+
+  if (allowedKeys.length === 0) {
     return res.status(401).json({
       error: { code: "UNAUTHORIZED", message: "Integration API key not configured on server." }
     });
@@ -28,7 +32,7 @@ export const verifyIntegrationAuth = (req, res, next) => {
     });
   }
 
-  if (providedKey !== expectedKey) {
+  if (!allowedKeys.includes(providedKey)) {
     return res.status(401).json({
       error: { code: "UNAUTHORIZED", message: "Invalid integration API key." }
     });

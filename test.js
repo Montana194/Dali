@@ -190,6 +190,28 @@ async function runTests() {
     // Cleanup test inspection
     await testInspection.destroy();
 
+    // 9. DALI POS Client & Bearer Token Authentication Test
+    const { DaliPosClient } = await import("./integrations/dalipos-client.mjs");
+    const testPosClient = new DaliPosClient({ baseUrl: "http://127.0.0.1:3999", token: validToken });
+    if (
+      typeof testPosClient.health !== "function" ||
+      typeof testPosClient.products !== "function" ||
+      typeof testPosClient.inventory !== "function" ||
+      typeof testPosClient.sales !== "function"
+    ) {
+      throw new Error("DaliPosClient is missing required methods.");
+    }
+    console.log("✅ DaliPosClient verified: health, products, inventory, sales methods present.");
+
+    // Test alias route /api/health with POS Bearer token
+    const posBearerRes = await request("/api/health", {
+      headers: { Authorization: `Bearer ${process.env.DALIAUDIT_API_TOKEN || validToken}` }
+    });
+    if (posBearerRes.status !== 200 || !posBearerRes.json?.ok) {
+      throw new Error(`POS Bearer authentication on /api/health failed: ${JSON.stringify(posBearerRes)}`);
+    }
+    console.log("✅ DALI POS Bearer authentication on /api/health: 200 OK & status ready.");
+
     console.log("🎉 All DALIAudit integration & smoke tests passed successfully!");
   } finally {
     server.close();

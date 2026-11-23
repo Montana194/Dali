@@ -8,6 +8,7 @@ import {
   ComplianceReport 
 } from "../models/index.js";
 import stockService from "../services/stockService.js";
+import posService from "../services/posService.js";
 
 // Modeled after act9 adminDashboard
 export async function adminDashboard(req, res) {
@@ -233,17 +234,21 @@ export const getAllInspections = async (req, res) => {
   }
 };
 
-// DALIStock Integration Management
+// DALI Modules Integration Management (DALIStock & DALI POS)
 export const getIntegrationsPage = async (req, res) => {
   try {
     const testResult = req.session.stockTestResult || null;
+    const posTestResult = req.session.posTestResult || null;
     res.render("admin/integrations", {
-      title: "DALIStock Integration - DALIAudit",
+      title: "Integrations & Connections - DALIAudit",
       stockUrl: process.env.STOCK_API_BASE_URL || "http://10.183.59.144:3000",
       stockBranch: process.env.STOCK_BRANCH_CODE || "BR-001",
       hasToken: Boolean(process.env.STOCK_API_TOKEN),
-      port: process.env.PORT || 3000,
-      testResult
+      posUrl: process.env.DALI_POS_BASE_URL || "http://127.0.0.1:3000",
+      hasPosToken: Boolean(process.env.DALI_POS_INTEGRATION_TOKEN),
+      port: process.env.PORT || 3003,
+      testResult,
+      posTestResult
     });
   } catch (error) {
     req.flash("error_msg", "Error loading integrations page.");
@@ -265,6 +270,24 @@ export const testStockConnection = async (req, res) => {
     res.redirect("/admin/integrations");
   } catch (error) {
     req.flash("error_msg", "Unexpected error testing connection: " + error.message);
+    res.redirect("/admin/integrations");
+  }
+};
+
+export const testPosConnection = async (req, res) => {
+  try {
+    const result = await posService.checkConnection();
+    req.session.posTestResult = result;
+
+    if (result.ok) {
+      req.flash("success_msg", `DALI POS connection verified! Service: ${result.service}, Status: ${result.status}`);
+    } else {
+      req.flash("error_msg", `DALI POS connection failed: ${result.error}`);
+    }
+
+    res.redirect("/admin/integrations");
+  } catch (error) {
+    req.flash("error_msg", "Unexpected error testing DALI POS: " + error.message);
     res.redirect("/admin/integrations");
   }
 };
