@@ -247,10 +247,12 @@ sequelize.sync().catch(err => console.error("Database sync error:", err));
 
 export default app;
 
-export const startServer = (port = PORT, host = HOST) => {
+export const startServer = (port = PORT, host = process.env.HOST) => {
   return new Promise((resolve, reject) => {
-    const server = app.listen(port, host, () => {
-      console.log(`🚀 DALIAudit System running at http://${host}:${port}`);
+    // If HOST is 0.0.0.0 or not set, omit host argument so Node listens on dual-stack (IPv4 & IPv6 localhost)
+    const listenArgs = host && host !== "0.0.0.0" ? [port, host] : [port];
+    const server = app.listen(...listenArgs, () => {
+      console.log(`🚀 DALIAudit System running at http://0.0.0.0:${port} and http://localhost:${port}`);
       resolve(server);
     });
     server.on("error", reject);
