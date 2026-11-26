@@ -82,8 +82,13 @@
               <td><span class="quantity-pill" style="font-weight:bold;">{{this.grade}}</span></td>
               <td><span class="quantity-pill">{{statusLabel this.status}}</span></td>
               <td>
-                <div class="product-actions">
-                  <a class="hero-button" style="padding:8px 14px;font-size:13px;" href="/reports/view/{{this.id}}">View Report →</a>
+                <div class="product-actions" style="display:flex;gap:6px;align-items:center;">
+                  <a class="edit-product-button" style="padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{this.id}}">
+                    <i class="fas fa-eye"></i> View
+                  </a>
+                  <a class="hero-button" style="padding:6px 12px;font-size:12px;background:#0f172a;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{this.id}}?print=true" target="_blank" title="Print Official Report">
+                    <i class="fas fa-print"></i> Print
+                  </a>
                 </div>
               </td>
             </tr>

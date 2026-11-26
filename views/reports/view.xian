@@ -1,4 +1,40 @@
 {{> head}}
+<style>
+  @media print {
+    /* Hide all web chrome, navbars, and buttons */
+    .no-print, nav, header, footer, .admin-sidebar, .admin-header, .shop-nav, #alert-container {
+      display: none !important;
+    }
+    body {
+      background: #ffffff !important;
+      color: #000000 !important;
+      font-size: 11pt !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    main {
+      padding: 0 !important;
+      margin: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    .print-doc {
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      width: 100% !important;
+    }
+    .print-avoid-break {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+    @page {
+      size: A4 portrait;
+      margin: 12mm 12mm 12mm 12mm;
+    }
+  }
+</style>
 <body class="flex flex-col min-h-screen bg-slate-100 text-slate-800">
   {{> navbar}}
   {{> alerts}}
@@ -8,22 +44,22 @@
     <!-- Action Bar (Hidden in Print) -->
     <div class="no-print flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
       <div class="flex items-center space-x-2">
-        <a href="/reports" class="text-sm font-semibold text-slate-600 hover:text-slate-900">
-          &larr; Back to Reports List
+        <a href="javascript:history.back()" class="text-sm font-semibold text-slate-600 hover:text-slate-900 flex items-center gap-1.5">
+          <i class="fas fa-arrow-left"></i> Back
         </a>
         <span class="text-slate-300">|</span>
         <span class="text-sm font-mono font-bold text-slate-800">{{report.reportCode}}</span>
       </div>
 
       <div class="flex items-center space-x-2">
-        <button onclick="window.print()" class="px-4 py-2 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow-sm flex items-center gap-2 transition-all">
-          <i class="fas fa-print"></i> Print Official Report
+        <button onclick="window.print()" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm shadow-md flex items-center gap-2 transition-all hover:scale-[1.02]">
+          <i class="fas fa-print"></i> Print Official Record
         </button>
       </div>
     </div>
 
     <!-- Official Printable Document Container -->
-    <div class="bg-white rounded-2xl border border-slate-200 shadow-lg p-8 sm:p-12 space-y-8 print:border-0 print:shadow-none print:p-0">
+    <div class="print-doc bg-white rounded-2xl border border-slate-200 shadow-lg p-8 sm:p-12 space-y-8 print:border-0 print:shadow-none print:p-0">
       
       <!-- Report Header with DALI Logo -->
       <div class="flex flex-col sm:flex-row items-center justify-between pb-6 border-b-2 border-slate-200 gap-4">
@@ -226,6 +262,16 @@
     </div>
 
   </main>
+
+  {{#if autoPrint}}
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        window.print();
+      }, 500);
+    });
+  </script>
+  {{/if}}
 
   {{> footer}}
 </body>

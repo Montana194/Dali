@@ -81,7 +81,7 @@
                 {{/if}}
               </td>
               <td>
-                <div class="product-actions">
+                <div class="product-actions" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
                   {{#if (eq this.status 'Scheduled')}}
                     <a class="hero-button" style="padding:8px 14px;font-size:13px;" href="/inspector/conduct/{{this.id}}">Start Inspection →</a>
                   {{/if}}
@@ -89,10 +89,18 @@
                     <a class="hero-button" style="padding:8px 14px;font-size:13px;background:#0284c7;" href="/inspector/conduct/{{this.id}}">Continue →</a>
                   {{/if}}
                   {{#if (eq this.status 'Noncompliant')}}
-                    <a class="edit-product-button" href="/inspector/conduct/{{this.id}}">Review Checklist</a>
+                    <a class="edit-product-button" style="padding:6px 12px;font-size:12px;" href="/inspector/conduct/{{this.id}}">Review Checklist</a>
+                    <a class="hero-button" style="padding:6px 12px;font-size:12px;background:#0f172a;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{this.id}}?print=true" target="_blank" title="Print Inspection Record">
+                      <i class="fas fa-print"></i> Print Record
+                    </a>
                   {{/if}}
-                  {{#if (eq this.status 'Closed')}}
-                    <a class="edit-product-button" href="/reports/view/{{this.id}}">View Report</a>
+                  {{#if (or (eq this.status 'Closed') (eq this.status 'Compliant'))}}
+                    <a class="edit-product-button" style="padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{this.id}}">
+                      <i class="fas fa-eye"></i> View
+                    </a>
+                    <a class="hero-button" style="padding:6px 12px;font-size:12px;background:#0f172a;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{this.id}}?print=true" target="_blank" title="Print Official Inspection Record">
+                      <i class="fas fa-print"></i> Print Record
+                    </a>
                   {{/if}}
                 </div>
               </td>

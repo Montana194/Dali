@@ -20,7 +20,8 @@ export const getInspectorDashboard = async (req, res) => {
       order: [["scheduledDate", "DESC"]],
       include: [
         { model: Store, as: "store" },
-        { model: Finding, as: "findings" }
+        { model: Finding, as: "findings" },
+        { model: ComplianceReport, as: "report" }
       ]
     });
 

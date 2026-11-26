@@ -46,15 +46,13 @@
               <td><span class="quantity-pill">{{statusLabel this.status}}</span></td>
               <td><strong>{{this.score}}%</strong></td>
               <td>
-                <div class="product-actions">
-                  {{#if this.report}}
-                    <a class="edit-product-button" href="/reports/view/{{this.report.id}}">View Report</a>
-                  {{else}}
-                    <form method="POST" action="/admin/reports/generate/{{this.id}}" class="inline">
-                      <input type="hidden" name="_csrf" value="{{../shopToken}}">
-                      <button class="edit-product-button" type="submit">Create Report</button>
-                    </form>
-                  {{/if}}
+                <div class="product-actions" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                  <a class="edit-product-button" style="padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{#if this.report}}{{this.report.id}}{{else}}{{this.id}}{{/if}}">
+                    <i class="fas fa-eye"></i> View
+                  </a>
+                  <a class="hero-button" style="padding:6px 12px;font-size:12px;background:#0f172a;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{#if this.report}}{{this.report.id}}{{else}}{{this.id}}{{/if}}?print=true" target="_blank" title="Print Official Inspection Record">
+                    <i class="fas fa-print"></i> Print Record
+                  </a>
                 </div>
               </td>
             </tr>
