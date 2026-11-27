@@ -47,12 +47,12 @@
               <td><strong>{{this.score}}%</strong></td>
               <td>
                 <div class="product-actions" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-                  <a class="edit-product-button" style="padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{#if this.report}}{{this.report.id}}{{else}}{{this.id}}{{/if}}" title="Preview Full Report On Screen">
+                  <button type="button" class="edit-product-button" style="padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;" onclick="openReportModal('{{#if this.report}}{{this.report.id}}{{else}}{{this.id}}{{/if}}')" title="Preview Report In Modal">
                     <i class="fas fa-eye text-blue-600"></i> Preview Report
-                  </a>
-                  <a class="hero-button" style="padding:6px 12px;font-size:12px;background:#0f172a;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{#if this.report}}{{this.report.id}}{{else}}{{this.id}}{{/if}}?print=true" target="_blank" title="Export as PDF or Print Record">
+                  </button>
+                  <button type="button" class="hero-button" style="padding:6px 12px;font-size:12px;background:#0f172a;display:inline-flex;align-items:center;gap:4px;cursor:pointer;" onclick="openReportModal('{{#if this.report}}{{this.report.id}}{{else}}{{this.id}}{{/if}}', true)" title="Export as PDF or Print Record">
                     <i class="fas fa-file-export text-emerald-400"></i> Export / Print
-                  </a>
+                  </button>
                 </div>
               </td>
             </tr>
@@ -66,4 +66,5 @@
     </div>
   </main>
 </div>
+{{> report-modal}}
 {{> footer}}

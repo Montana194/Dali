@@ -32,122 +32,159 @@ export const getReportsList = async (req, res) => {
   }
 };
 
+// Helper: Fetch Report with Complete Relational Details & Auto-Creation Fallback
+export const fetchReportWithDetails = async (id, userId) => {
+  const reportInclude = [
+    { model: Store, as: "store" },
+    { model: User, as: "inspector" },
+    { 
+      model: Inspection, 
+      as: "inspection",
+      include: [
+        { 
+          model: InspectionResponse, 
+          as: "responses",
+          include: [{ model: ChecklistItem, as: "checklistItem" }]
+        },
+        { 
+          model: Finding, 
+          as: "findings",
+          include: [
+            { model: CorrectiveAction, as: "correctiveAction" },
+            { model: Evidence, as: "evidences" }
+          ]
+        },
+        { model: Evidence, as: "evidences" }
+      ]
+    }
+  ];
+
+  let report = await ComplianceReport.findByPk(id, { include: reportInclude });
+
+  // Fallback 1: If not found by report ID, check if ID is an inspectionId
+  if (!report) {
+    report = await ComplianceReport.findOne({
+      where: { inspectionId: id },
+      include: reportInclude
+    });
+  }
+
+  // Fallback 2: If no report exists yet for this inspection, auto-generate it so it is immediately previewable & printable
+  if (!report) {
+    const inspection = await Inspection.findByPk(id, {
+      include: [
+        { model: Store, as: "store" },
+        { model: User, as: "inspector" },
+        { model: Finding, as: "findings" }
+      ]
+    });
+
+    if (inspection) {
+      const count = await ComplianceReport.count();
+      const reportCode = `REP-2026-${String(count + 1).padStart(3, "0")}`;
+      const finalScore = inspection.score || 0;
+      const grade = finalScore >= 90 ? "Grade A - Outstanding" : (finalScore >= 75 ? "Grade B - Satisfactory" : "Grade C - Needs Improvement");
+      const hasViolations = (inspection.findings && inspection.findings.length > 0) || finalScore < 75;
+
+      await ComplianceReport.create({
+        reportCode,
+        inspectionId: inspection.id,
+        storeId: inspection.storeId,
+        inspectorId: inspection.inspectorId || userId,
+        summary: hasViolations 
+          ? `Inspection completed with score of ${finalScore}%. ${inspection.findings?.length || 0} sanitation violations recorded requiring corrective action.`
+          : `Inspection passed with score of ${finalScore}%. Full sanitation compliance observed across all food safety standards.`,
+        finalScore,
+        grade,
+        status: "Published",
+        recommendations: "Maintain strict daily sanitation logs and cold-chain compliance."
+      });
+
+      report = await ComplianceReport.findOne({
+        where: { inspectionId: inspection.id },
+        include: reportInclude
+      });
+    }
+  }
+
+  if (!report) return null;
+
+  // Group responses by category
+  const categoryScores = {};
+  if (report.inspection?.responses) {
+    for (const resp of report.inspection.responses) {
+      const cat = resp.checklistItem?.category || "General";
+      if (!categoryScores[cat]) {
+        categoryScores[cat] = { total: 0, earned: 0, items: [] };
+      }
+      categoryScores[cat].total += resp.checklistItem?.weight || 10;
+      categoryScores[cat].earned += resp.scoreAwarded || 0;
+      categoryScores[cat].items.push(resp);
+    }
+  }
+
+  const categoriesBreakdown = Object.keys(categoryScores).map(catName => ({
+    name: catName,
+    total: categoryScores[catName].total,
+    earned: categoryScores[catName].earned,
+    percentage: Math.round((categoryScores[catName].earned / (categoryScores[catName].total || 1)) * 100),
+    items: categoryScores[catName].items
+  }));
+
+  return { report, categoriesBreakdown };
+};
+
 // View Detailed Report & Printable Inspection Record
 export const viewReport = async (req, res) => {
   try {
     const { id } = req.params;
     const shouldAutoPrint = req.query.print === "true" || req.query.print === "1";
+    const data = await fetchReportWithDetails(id, req.session.userId);
 
-    const reportInclude = [
-      { model: Store, as: "store" },
-      { model: User, as: "inspector" },
-      { 
-        model: Inspection, 
-        as: "inspection",
-        include: [
-          { 
-            model: InspectionResponse, 
-            as: "responses",
-            include: [{ model: ChecklistItem, as: "checklistItem" }]
-          },
-          { 
-            model: Finding, 
-            as: "findings",
-            include: [
-              { model: CorrectiveAction, as: "correctiveAction" },
-              { model: Evidence, as: "evidences" }
-            ]
-          },
-          { model: Evidence, as: "evidences" }
-        ]
-      }
-    ];
-
-    let report = await ComplianceReport.findByPk(id, { include: reportInclude });
-
-    // Fallback 1: If not found by report ID, check if ID is an inspectionId
-    if (!report) {
-      report = await ComplianceReport.findOne({
-        where: { inspectionId: id },
-        include: reportInclude
-      });
-    }
-
-    // Fallback 2: If no report exists yet for this inspection, auto-generate it so the inspection record is immediately printable
-    if (!report) {
-      const inspection = await Inspection.findByPk(id, {
-        include: [
-          { model: Store, as: "store" },
-          { model: User, as: "inspector" },
-          { model: Finding, as: "findings" }
-        ]
-      });
-
-      if (inspection) {
-        const count = await ComplianceReport.count();
-        const reportCode = `REP-2026-${String(count + 1).padStart(3, "0")}`;
-        const finalScore = inspection.score || 0;
-        const grade = finalScore >= 90 ? "Grade A - Outstanding" : (finalScore >= 75 ? "Grade B - Satisfactory" : "Grade C - Needs Improvement");
-        const hasViolations = (inspection.findings && inspection.findings.length > 0) || finalScore < 75;
-
-        await ComplianceReport.create({
-          reportCode,
-          inspectionId: inspection.id,
-          storeId: inspection.storeId,
-          inspectorId: inspection.inspectorId || req.session.userId,
-          summary: hasViolations 
-            ? `Inspection completed with score of ${finalScore}%. ${inspection.findings?.length || 0} sanitation violations recorded requiring corrective action.`
-            : `Inspection passed with score of ${finalScore}%. Full sanitation compliance observed across all food safety standards.`,
-          finalScore,
-          grade,
-          status: "Published",
-          recommendations: "Maintain strict daily sanitation logs and cold-chain compliance."
-        });
-
-        report = await ComplianceReport.findOne({
-          where: { inspectionId: inspection.id },
-          include: reportInclude
-        });
-      }
-    }
-
-    if (!report) {
+    if (!data) {
       req.flash("error_msg", "Compliance inspection report not found.");
       return res.redirect("/reports");
     }
 
-    // Group responses by category
-    const categoryScores = {};
-    if (report.inspection?.responses) {
-      for (const resp of report.inspection.responses) {
-        const cat = resp.checklistItem?.category || "General";
-        if (!categoryScores[cat]) {
-          categoryScores[cat] = { total: 0, earned: 0, items: [] };
-        }
-        categoryScores[cat].total += resp.checklistItem?.weight || 10;
-        categoryScores[cat].earned += resp.scoreAwarded || 0;
-        categoryScores[cat].items.push(resp);
-      }
+    if (req.query.modal === "true" || req.xhr || req.headers["x-requested-with"] === "XMLHttpRequest") {
+      return res.render("partials/report-document", {
+        layout: false,
+        report: data.report,
+        categoriesBreakdown: data.categoriesBreakdown
+      });
     }
 
-    const categoriesBreakdown = Object.keys(categoryScores).map(catName => ({
-      name: catName,
-      total: categoryScores[catName].total,
-      earned: categoryScores[catName].earned,
-      percentage: Math.round((categoryScores[catName].earned / (categoryScores[catName].total || 1)) * 100),
-      items: categoryScores[catName].items
-    }));
-
     res.render("reports/view", {
-      title: `Sanitation Compliance Audit ${report.reportCode} - DALIAudit`,
-      report,
-      categoriesBreakdown,
+      title: `Sanitation Compliance Audit ${data.report.reportCode} - DALIAudit`,
+      report: data.report,
+      categoriesBreakdown: data.categoriesBreakdown,
       autoPrint: shouldAutoPrint
     });
   } catch (error) {
     console.error("View report error:", error);
     req.flash("error_msg", "Failed to load report.");
     res.redirect("/admin/dashboard");
+  }
+};
+
+// Modal Fragment Endpoint (for instant in-page preview without page navigation)
+export const getReportModalContent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = await fetchReportWithDetails(id, req.session.userId);
+
+    if (!data) {
+      return res.status(404).send("<div class='p-8 text-center text-rose-600 font-bold'>Inspection report not found.</div>");
+    }
+
+    res.render("partials/report-document", {
+      layout: false,
+      report: data.report,
+      categoriesBreakdown: data.categoriesBreakdown
+    });
+  } catch (error) {
+    console.error("Modal report error:", error);
+    res.status(500).send("<div class='p-8 text-center text-rose-600 font-bold'>Failed to load inspection preview.</div>");
   }
 };
 

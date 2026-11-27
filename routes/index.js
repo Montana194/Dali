@@ -57,6 +57,7 @@ import {
 import {
   getReportsList,
   viewReport,
+  getReportModalContent,
   generateReportForInspection,
 } from "../controllers/reportController.js";
 import { upload } from "../middleware/upload.js";
@@ -155,5 +156,6 @@ router.post("/store/actions/:id", upload.array("remediationPhotos", 5), asyncRou
 // -------------------------------------------------------------
 router.get("/reports", requireLogin, asyncRoute(getReportsList));
 router.get("/reports/view/:id", requireLogin, asyncRoute(viewReport));
+router.get("/reports/modal/:id", requireLogin, asyncRoute(getReportModalContent));
 
 export default router;

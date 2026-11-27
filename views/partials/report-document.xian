@@ -1,0 +1,197 @@
+<!-- Report Header with DALI Logo -->
+<div class="flex flex-col sm:flex-row items-center justify-between pb-6 border-b-2 border-slate-200 gap-4">
+  <div class="flex items-center space-x-4">
+    <div class="h-20 w-20 rounded-xl p-1 bg-white border border-slate-200 shadow-sm flex items-center justify-center shrink-0">
+      <img src="/images/dali-logo.png" alt="DALI Logo" class="h-full object-contain">
+    </div>
+    <div>
+      <div class="flex items-center space-x-1.5">
+        <span class="text-2xl font-black text-dali-700 tracking-tight">DALI</span>
+        <span class="text-2xl font-bold text-slate-800 tracking-tight">Everyday Grocery</span>
+      </div>
+      <h1 class="text-lg font-bold text-slate-900 uppercase tracking-wider mt-0.5">Store Cleanliness &amp; Food Safety Inspection Report</h1>
+      <p class="text-xs text-slate-500">Quality Assurance, Cold Chain Integrity &amp; Hygiene Standards</p>
+    </div>
+  </div>
+
+  <div class="text-center sm:text-right border-t sm:border-t-0 pt-3 sm:pt-0 shrink-0">
+    <div class="font-mono text-xs font-bold text-slate-500 uppercase">Certificate No.</div>
+    <div class="text-xl font-black text-slate-900 font-mono">{{report.reportCode}}</div>
+    <div class="text-xs text-slate-500 mt-1">Audit Date: {{formatDate report.generatedAt}}</div>
+    <div class="mt-2">{{statusBadge report.status}}</div>
+  </div>
+</div>
+
+<!-- Store & Auditor Metadata Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-slate-50 p-6 rounded-xl border border-slate-200 text-sm">
+  <div class="space-y-1.5">
+    <div class="font-bold text-xs uppercase tracking-wider text-slate-400">Audited Branch Store</div>
+    <div class="text-lg font-extrabold text-slate-900">{{report.store.name}}</div>
+    <div class="text-slate-600"><i class="fas fa-location-dot mr-1 text-slate-400"></i> {{report.store.address}}</div>
+    <div class="text-slate-600">Branch Code: <strong>{{report.store.code}}</strong> &bull; Region: {{report.store.region}}</div>
+    <div class="text-slate-600">Store Manager: <strong>{{report.store.managerName}}</strong></div>
+    {{#if report.inspection.stockBranchCode}}
+      <div class="text-xs text-rose-900 font-semibold bg-rose-50 px-2.5 py-1.5 rounded-lg border border-rose-200 mt-2 inline-flex items-center gap-1.5">
+        <i class="fas fa-boxes-stacked text-rose-600"></i> DALIStock Link: Branch <strong>{{report.inspection.stockBranchCode}}</strong>
+        {{#if report.inspection.stockSku}} &bull; SKU: <strong>{{report.inspection.stockSku}}</strong>{{#if report.inspection.stockProductName}} ({{report.inspection.stockProductName}}){{/if}}{{/if}}
+      </div>
+    {{/if}}
+  </div>
+
+  <div class="space-y-1.5 sm:border-l sm:border-slate-200 sm:pl-6">
+    <div class="font-bold text-xs uppercase tracking-wider text-slate-400">Sanitation Inspector</div>
+    <div class="text-lg font-extrabold text-slate-900">{{report.inspector.fullName}}</div>
+    <div class="text-slate-600">Inspector ID: <strong>{{report.inspector.badgeNumber}}</strong></div>
+    <div class="text-slate-600">Email: {{report.inspector.email}}</div>
+    <div class="text-slate-600">Audit Protocol: <strong>DALI Food Safety Standards</strong></div>
+  </div>
+</div>
+
+<!-- Executive Score & Grade Banner -->
+<div class="p-6 rounded-2xl border-2 flex flex-col sm:flex-row items-center justify-between gap-6
+  {{#if (gte report.finalScore 90)}}bg-emerald-50/70 border-emerald-300 text-emerald-950{{/if}}
+  {{#if (and (gte report.finalScore 75) (lt report.finalScore 90))}}bg-amber-50/70 border-amber-300 text-amber-950{{/if}}
+  {{#if (lt report.finalScore 75)}}bg-rose-50/70 border-rose-300 text-rose-950{{/if}}"
+>
+  <div class="space-y-1 text-center sm:text-left">
+    <div class="text-xs uppercase font-extrabold tracking-wider opacity-70">Official Inspection Result</div>
+    <h2 class="text-2xl font-black">{{report.grade}}</h2>
+    <p class="text-sm opacity-90 max-w-xl leading-relaxed">{{report.summary}}</p>
+  </div>
+
+  <div class="text-center bg-white px-8 py-5 rounded-2xl shadow-sm border border-slate-200 min-w-[170px]">
+    <div class="text-xs uppercase font-bold tracking-wider text-slate-400">Final Audit Score</div>
+    <div class="text-4xl font-black {{scoreColor report.finalScore}} mt-1">{{report.finalScore}}%</div>
+    <div class="text-xs font-bold text-slate-600 mt-1">Total Score</div>
+  </div>
+</div>
+
+<!-- Category Breakdown -->
+<div class="space-y-4">
+  <h3 class="font-bold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
+    <i class="fas fa-chart-column text-dali-700"></i> Category Score Breakdown
+  </h3>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {{#each categoriesBreakdown}}
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-sm">
+        <div class="flex items-center justify-between font-bold mb-1.5">
+          <span class="text-slate-900">{{this.name}}</span>
+          <span class="{{scoreColor this.percentage}}">{{this.percentage}}% ({{this.earned}}/{{this.total}} pts)</span>
+        </div>
+        <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+          <div class="h-full bg-dali-700 rounded-full" style="width: {{this.percentage}}%"></div>
+        </div>
+      </div>
+    {{/each}}
+  </div>
+</div>
+
+<!-- Checklist Items Detailed Responses Table -->
+{{#if report.inspection.responses}}
+  <div class="space-y-3">
+    <h3 class="font-bold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
+      <i class="fas fa-list-check text-dali-700"></i> Detailed Checklist Evaluation
+    </h3>
+
+    <div class="border border-slate-200 rounded-xl overflow-hidden">
+      <table class="w-full text-left border-collapse text-sm">
+        <thead>
+          <tr class="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider border-b border-slate-200 text-xs">
+            <th class="py-3 px-4">Item Requirement</th>
+            <th class="py-3 px-4">Result</th>
+            <th class="py-3 px-4">Score</th>
+            <th class="py-3 px-4">Inspector Observations</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {{#each report.inspection.responses}}
+            <tr class="hover:bg-slate-50/50">
+              <td class="py-3 px-4 font-medium text-slate-900">{{this.checklistItem.requirement}}</td>
+              <td class="py-3 px-4">
+                {{#if (eq this.result 'Compliant')}}
+                  <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800">Compliant</span>
+                {{else}}
+                  <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-rose-100 text-rose-800">Not Compliant</span>
+                {{/if}}
+              </td>
+              <td class="py-3 px-4 font-mono font-bold text-slate-700">{{this.scoreAwarded}} pts</td>
+              <td class="py-3 px-4 text-slate-600 max-w-sm">{{#if this.remarks}}{{this.remarks}}{{else}}—{{/if}}</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{{/if}}
+
+<!-- Findings & Corrective Action Log -->
+{{#if (gt report.inspection.findings.length 0)}}
+  <div class="space-y-3">
+    <h3 class="font-bold text-slate-900 text-sm uppercase tracking-wider flex items-center gap-2">
+      <i class="fas fa-triangle-exclamation text-rose-600"></i> Recorded Problems &amp; Fixes
+    </h3>
+
+    <div class="space-y-3">
+      {{#each report.inspection.findings}}
+        <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/70 text-sm space-y-2">
+          <div class="flex items-center justify-between">
+            <div class="font-bold text-slate-900">
+              {{this.title}}
+              {{#if this.stockSku}}
+                <span class="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono font-bold bg-rose-100 text-rose-800 border border-rose-300">
+                  <i class="fas fa-barcode"></i> SKU: {{this.stockSku}}{{#if this.stockProductName}} ({{this.stockProductName}}){{/if}}
+                </span>
+              {{/if}}
+            </div>
+            <div class="flex items-center gap-2">
+              {{severityBadge this.severity}}
+              {{statusBadge this.status}}
+            </div>
+          </div>
+          <p class="text-slate-600 leading-relaxed">{{this.description}}</p>
+
+          {{#if this.correctiveAction}}
+            <div class="mt-2 p-3.5 rounded-lg bg-white border border-slate-200 text-sm">
+              <span class="font-bold text-slate-800 block mb-1">Store Fix Action Taken:</span>
+              <p class="text-slate-700">{{this.correctiveAction.actionPlan}}</p>
+              <div class="mt-1.5 text-xs text-slate-500">
+                Fix Status: <strong>{{statusLabel this.correctiveAction.status}}</strong>
+                {{#if this.correctiveAction.verifiedAt}} &bull; Verified on {{formatDate this.correctiveAction.verifiedAt}}{{/if}}
+              </div>
+            </div>
+          {{/if}}
+        </div>
+      {{/each}}
+    </div>
+  </div>
+{{/if}}
+
+<!-- Recommendations & Next Steps -->
+<div class="p-5 rounded-xl bg-slate-50 border border-slate-200 text-sm space-y-1">
+  <span class="font-bold text-xs uppercase text-slate-500 tracking-wider block">Auditor Recommendations</span>
+  <p class="text-slate-700 leading-relaxed">{{report.recommendations}}</p>
+</div>
+
+<!-- Formal Signature Blocks -->
+<div class="pt-8 border-t-2 border-slate-200 grid grid-cols-2 gap-12 text-sm">
+  <div class="text-center space-y-4">
+    <div class="h-12 flex items-end justify-center">
+      <span class="font-serif italic text-base text-slate-700">Digital Signature Verified</span>
+    </div>
+    <div class="border-t border-slate-400 pt-1">
+      <div class="font-bold text-slate-900">{{report.inspector.fullName}}</div>
+      <div class="text-xs text-slate-500">Sanitation Inspector (ID: {{report.inspector.badgeNumber}})</div>
+    </div>
+  </div>
+
+  <div class="text-center space-y-4">
+    <div class="h-12 flex items-end justify-center">
+      <span class="font-serif italic text-base text-slate-700">Acknowledged by Store</span>
+    </div>
+    <div class="border-t border-slate-400 pt-1">
+      <div class="font-bold text-slate-900">{{report.store.managerName}}</div>
+      <div class="text-xs text-slate-500">Store Manager ({{report.store.name}})</div>
+    </div>
+  </div>
+</div>

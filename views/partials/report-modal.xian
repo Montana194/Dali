@@ -1,0 +1,204 @@
+<!-- Universal Report Preview & Export Modal (No Page Navigation) -->
+<div id="dali-report-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-900/75 backdrop-blur-sm overflow-y-auto transition-opacity duration-200">
+  <div class="relative w-full max-w-5xl my-auto bg-slate-100 rounded-3xl shadow-2xl border border-slate-300 flex flex-col overflow-hidden max-h-[94vh] animate-in fade-in zoom-in-95 duration-150">
+    
+    <!-- Modal Sticky Action Bar Header -->
+    <div class="sticky top-0 z-20 flex flex-wrap items-center justify-between bg-white px-5 py-3.5 border-b border-slate-200 shadow-sm gap-3">
+      <div class="flex items-center space-x-2.5">
+        <span class="w-8 h-8 rounded-xl bg-dali-100 text-dali-700 flex items-center justify-center font-bold text-sm">
+          <i class="fas fa-file-lines"></i>
+        </span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h3 class="font-extrabold text-slate-900 text-sm sm:text-base leading-none">Inspection Report Preview</h3>
+            <span id="modal-report-code" class="px-2 py-0.5 rounded text-[11px] font-mono font-extrabold bg-slate-100 text-slate-700 border border-slate-200">
+              Loading...
+            </span>
+          </div>
+          <p class="text-[11px] text-slate-500 mt-0.5">Live in-modal certificate view &bull; Ready to print or export as PDF</p>
+        </div>
+      </div>
+
+      <!-- Header Action Buttons -->
+      <div class="flex items-center space-x-2">
+        <button type="button" onclick="printModalReport()" class="px-3.5 py-2 rounded-xl bg-white border-2 border-rose-600 hover:bg-rose-50 text-rose-700 font-extrabold text-xs shadow-sm flex items-center gap-1.5 transition-all hover:scale-[1.02]">
+          <i class="fas fa-file-pdf text-rose-600"></i> Export to PDF
+        </button>
+        <button type="button" onclick="printModalReport()" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-md flex items-center gap-1.5 transition-all hover:scale-[1.02]">
+          <i class="fas fa-print"></i> Print Record
+        </button>
+        <button type="button" onclick="closeReportModal()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-100 hover:text-rose-700 text-slate-500 flex items-center justify-center font-bold text-base transition-colors" title="Close Preview (Esc)">
+          <i class="fas fa-xmark"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Scrollable Content Container -->
+    <div class="flex-grow overflow-y-auto p-3 sm:p-6 md:p-8 bg-slate-200/50 flex justify-center">
+      
+      <!-- Loading Spinner Skeleton -->
+      <div id="modal-report-loading" class="py-16 text-center space-y-4">
+        <div class="inline-block w-10 h-10 border-4 border-slate-300 border-t-dali-700 rounded-full animate-spin"></div>
+        <p class="text-sm font-bold text-slate-600">Generating live inspection certificate preview...</p>
+      </div>
+
+      <!-- Report Document Paper Sheet Preview -->
+      <div id="modal-report-content" class="hidden bg-white rounded-2xl p-6 sm:p-10 md:p-12 shadow-xl border border-slate-200 max-w-[920px] w-full space-y-8 my-auto">
+        <!-- Dynamic content injected via fetch() -->
+      </div>
+
+    </div>
+
+    <!-- Modal Footer Help Bar -->
+    <div class="bg-slate-50 px-5 py-2.5 border-t border-slate-200 text-xs text-slate-500 flex items-center justify-between">
+      <span><i class="fas fa-keyboard mr-1"></i> Press <strong>Esc</strong> or click outside to close</span>
+      <button type="button" onclick="closeReportModal()" class="font-bold text-slate-700 hover:underline">Done Previewing</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Open the report modal without navigating away from the page
+  window.openReportModal = function(id, autoPrint = false) {
+    const modal = document.getElementById('dali-report-modal');
+    const loading = document.getElementById('modal-report-loading');
+    const content = document.getElementById('modal-report-content');
+    const codeBadge = document.getElementById('modal-report-code');
+
+    if (!modal) return;
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+
+    loading.classList.remove('hidden');
+    content.classList.add('hidden');
+    content.innerHTML = '';
+    codeBadge.textContent = 'Loading...';
+
+    fetch('/reports/modal/' + encodeURIComponent(id))
+      .then(res => {
+        if (!res.ok) throw new Error('Report could not be retrieved.');
+        return res.text();
+      })
+      .then(html => {
+        content.innerHTML = html;
+        loading.classList.add('hidden');
+        content.classList.remove('hidden');
+
+        // Extract report code from content if available
+        const codeElem = content.querySelector('.font-mono.text-xl');
+        if (codeElem) {
+          codeBadge.textContent = codeElem.textContent.trim();
+        } else {
+          codeBadge.textContent = 'REP-' + id;
+        }
+
+        // If user requested direct Export/Print, trigger print preview
+        if (autoPrint) {
+          setTimeout(() => {
+            printModalReport();
+          }, 300);
+        }
+      })
+      .catch(err => {
+        loading.classList.add('hidden');
+        content.classList.remove('hidden');
+        content.innerHTML = `
+          <div class="py-12 text-center space-y-3">
+            <div class="w-12 h-12 mx-auto rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl font-bold">
+              <i class="fas fa-circle-exclamation"></i>
+            </div>
+            <h4 class="font-bold text-slate-900 text-base">Unable to Load Preview</h4>
+            <p class="text-sm text-slate-500 max-w-md mx-auto">${err.message || 'Please check if the inspection record is available.'}</p>
+            <button onclick="closeReportModal()" class="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold">Close</button>
+          </div>
+        `;
+      });
+  };
+
+  // Close the modal
+  window.closeReportModal = function() {
+    const modal = document.getElementById('dali-report-modal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.style.overflow = '';
+  };
+
+  // Print / Export to PDF directly from modal without page change
+  window.printModalReport = function() {
+    const content = document.getElementById('modal-report-content');
+    if (!content || !content.innerHTML) return;
+
+    let printFrame = document.getElementById('report-print-frame');
+    if (!printFrame) {
+      printFrame = document.createElement('iframe');
+      printFrame.id = 'report-print-frame';
+      printFrame.style.position = 'fixed';
+      printFrame.style.right = '0';
+      printFrame.style.bottom = '0';
+      printFrame.style.width = '0';
+      printFrame.style.height = '0';
+      printFrame.style.border = '0';
+      document.body.appendChild(printFrame);
+    }
+
+    const doc = printFrame.contentWindow.document;
+    doc.open();
+    doc.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>DALI Sanitation Compliance Inspection Report</title>
+        <script src="https://cdn.tailwindcss.com"><\/script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+        <style>
+          body { 
+            background: #ffffff !important; 
+            color: #000000 !important; 
+            font-size: 11pt !important; 
+            padding: 10mm !important; 
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+          }
+          @page { size: A4 portrait; margin: 10mm; }
+          .print-avoid-break { break-inside: avoid !important; page-break-inside: avoid !important; }
+        </style>
+      </head>
+      <body>
+        <div class="space-y-8">${content.innerHTML}</div>
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.focus();
+              window.print();
+            }, 350);
+          };
+        <\/script>
+      </body>
+      </html>
+    `);
+    doc.close();
+  };
+
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeReportModal();
+    }
+  });
+
+  // Close on backdrop click
+  document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('dali-report-modal');
+    if (modal) {
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          closeReportModal();
+        }
+      });
+    }
+  });
+</script>
