@@ -90,19 +90,13 @@
                   {{/if}}
                   {{#if (eq this.status 'Noncompliant')}}
                     <a class="edit-product-button" style="padding:6px 12px;font-size:12px;" href="/inspector/conduct/{{this.id}}">Review Checklist</a>
-                    <button type="button" class="edit-product-button" style="padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;" onclick="openReportModal('{{this.id}}')" title="Preview Report In Modal">
-                      <i class="fas fa-eye text-blue-600"></i> Preview Report
-                    </button>
-                    <button type="button" class="hero-button" style="padding:6px 12px;font-size:12px;background:#0f172a;display:inline-flex;align-items:center;gap:4px;cursor:pointer;" onclick="openReportModal('{{this.id}}', true)" title="Export to PDF or Print">
-                      <i class="fas fa-file-export text-emerald-400"></i> Export / Print
+                    <button type="button" class="hero-button" style="padding:7px 16px;font-size:13px;background:#0f172a;display:inline-flex;align-items:center;gap:6px;cursor:pointer;" onclick="openReportModal('{{this.id}}')" title="Export or Print Inspection Report">
+                      <i class="fas fa-file-export text-emerald-400"></i> Export
                     </button>
                   {{/if}}
                   {{#if (or (eq this.status 'Closed') (eq this.status 'Compliant'))}}
-                    <button type="button" class="edit-product-button" style="padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:4px;cursor:pointer;" onclick="openReportModal('{{this.id}}')" title="Preview Full Report In Modal">
-                      <i class="fas fa-eye text-blue-600"></i> Preview Report
-                    </button>
-                    <button type="button" class="hero-button" style="padding:6px 12px;font-size:12px;background:#0f172a;display:inline-flex;align-items:center;gap:4px;cursor:pointer;" onclick="openReportModal('{{this.id}}', true)" title="Export as PDF or Print Record">
-                      <i class="fas fa-file-export text-emerald-400"></i> Export / Print
+                    <button type="button" class="hero-button" style="padding:7px 16px;font-size:13px;background:#0f172a;display:inline-flex;align-items:center;gap:6px;cursor:pointer;" onclick="openReportModal('{{this.id}}')" title="Export or Print Inspection Report">
+                      <i class="fas fa-file-export text-emerald-400"></i> Export
                     </button>
                   {{/if}}
                 </div>

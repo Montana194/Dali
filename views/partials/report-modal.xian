@@ -1,12 +1,83 @@
-<!-- Universal Report Preview & Export Modal (No Page Navigation) -->
-<div id="dali-report-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-900/75 backdrop-blur-sm overflow-y-auto transition-opacity duration-200">
+<!-- html2pdf library for client-side direct PDF download -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+  /* Modal Direct Print Stylesheet (Shows Full Print Preview in Browser) */
+  @media print {
+    body.printing-modal > *:not(#dali-report-modal) {
+      display: none !important;
+    }
+    body.printing-modal {
+      background: #ffffff !important;
+      color: #000000 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    body.printing-modal #dali-report-modal {
+      position: static !important;
+      display: block !important;
+      background: #ffffff !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      box-shadow: none !important;
+      overflow: visible !important;
+      inset: auto !important;
+    }
+    body.printing-modal #dali-report-modal > div {
+      box-shadow: none !important;
+      border: none !important;
+      max-width: 100% !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      max-height: none !important;
+      overflow: visible !important;
+      background: #ffffff !important;
+      border-radius: 0 !important;
+    }
+    body.printing-modal #dali-report-modal .no-print-modal,
+    body.printing-modal #dali-report-modal .sticky,
+    body.printing-modal #dali-report-modal .modal-footer-bar {
+      display: none !important;
+    }
+    body.printing-modal #dali-report-modal .modal-body-scroll {
+      background: #ffffff !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: visible !important;
+    }
+    body.printing-modal #modal-report-content {
+      display: block !important;
+      box-shadow: none !important;
+      border: none !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      background: #ffffff !important;
+    }
+    .print-avoid-break {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+    @page {
+      size: A4 portrait;
+      margin: 12mm 10mm 12mm 10mm;
+    }
+  }
+</style>
+
+<!-- Universal Report Export & Preview Modal (No Page Navigation) -->
+<div id="dali-report-modal" class="fixed inset-0 z-[9999] hidden items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-900/80 backdrop-blur-sm overflow-y-auto transition-opacity duration-200">
   <div class="relative w-full max-w-5xl my-auto bg-slate-100 rounded-3xl shadow-2xl border border-slate-300 flex flex-col overflow-hidden max-h-[94vh] animate-in fade-in zoom-in-95 duration-150">
     
     <!-- Modal Sticky Action Bar Header -->
-    <div class="sticky top-0 z-20 flex flex-wrap items-center justify-between bg-white px-5 py-3.5 border-b border-slate-200 shadow-sm gap-3">
+    <div class="sticky top-0 z-20 flex flex-wrap items-center justify-between bg-white px-5 py-3.5 border-b border-slate-200 shadow-sm gap-3 no-print-modal">
       <div class="flex items-center space-x-2.5">
-        <span class="w-8 h-8 rounded-xl bg-dali-100 text-dali-700 flex items-center justify-center font-bold text-sm">
-          <i class="fas fa-file-lines"></i>
+        <span class="w-9 h-9 rounded-xl bg-dali-100 text-dali-700 flex items-center justify-center font-bold text-sm shadow-sm">
+          <i class="fas fa-file-invoice"></i>
         </span>
         <div>
           <div class="flex items-center gap-2">
@@ -15,26 +86,26 @@
               Loading...
             </span>
           </div>
-          <p class="text-[11px] text-slate-500 mt-0.5">Live in-modal certificate view &bull; Ready to print or export as PDF</p>
+          <p class="text-[11px] text-slate-500 mt-0.5">Official DALI certificate preview &bull; Export to PDF or Print</p>
         </div>
       </div>
 
       <!-- Header Action Buttons -->
-      <div class="flex items-center space-x-2">
-        <button type="button" onclick="printModalReport()" class="px-3.5 py-2 rounded-xl bg-white border-2 border-rose-600 hover:bg-rose-50 text-rose-700 font-extrabold text-xs shadow-sm flex items-center gap-1.5 transition-all hover:scale-[1.02]">
-          <i class="fas fa-file-pdf text-rose-600"></i> Export to PDF
+      <div class="flex items-center space-x-2.5">
+        <button type="button" id="modal-export-pdf-btn" onclick="exportModalToPdf()" class="px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white font-extrabold text-xs shadow-md flex items-center gap-1.5 transition-all hover:scale-[1.02] cursor-pointer" title="Download directly as PDF file">
+          <i class="fas fa-file-pdf"></i> Export to PDF
         </button>
-        <button type="button" onclick="printModalReport()" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-md flex items-center gap-1.5 transition-all hover:scale-[1.02]">
+        <button type="button" onclick="printModalReport()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-md flex items-center gap-1.5 transition-all hover:scale-[1.02] cursor-pointer" title="Print with full preview">
           <i class="fas fa-print"></i> Print Record
         </button>
-        <button type="button" onclick="closeReportModal()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-100 hover:text-rose-700 text-slate-500 flex items-center justify-center font-bold text-base transition-colors" title="Close Preview (Esc)">
+        <button type="button" onclick="closeReportModal()" class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-rose-100 hover:text-rose-700 text-slate-500 flex items-center justify-center font-bold text-base transition-colors cursor-pointer" title="Close Preview (Esc)">
           <i class="fas fa-xmark"></i>
         </button>
       </div>
     </div>
 
     <!-- Modal Scrollable Content Container -->
-    <div class="flex-grow overflow-y-auto p-3 sm:p-6 md:p-8 bg-slate-200/50 flex justify-center">
+    <div class="modal-body-scroll flex-grow overflow-y-auto p-3 sm:p-6 md:p-8 bg-slate-200/50 flex justify-center">
       
       <!-- Loading Spinner Skeleton -->
       <div id="modal-report-loading" class="py-16 text-center space-y-4">
@@ -50,9 +121,9 @@
     </div>
 
     <!-- Modal Footer Help Bar -->
-    <div class="bg-slate-50 px-5 py-2.5 border-t border-slate-200 text-xs text-slate-500 flex items-center justify-between">
-      <span><i class="fas fa-keyboard mr-1"></i> Press <strong>Esc</strong> or click outside to close</span>
-      <button type="button" onclick="closeReportModal()" class="font-bold text-slate-700 hover:underline">Done Previewing</button>
+    <div class="modal-footer-bar bg-slate-50 px-5 py-2.5 border-t border-slate-200 text-xs text-slate-500 flex items-center justify-between no-print-modal">
+      <span><i class="fas fa-circle-info mr-1 text-slate-400"></i> Click <strong>Export to PDF</strong> to download the file directly, or <strong>Print Record</strong> for physical copy</span>
+      <button type="button" onclick="closeReportModal()" class="font-bold text-slate-700 hover:underline cursor-pointer">Close Window</button>
     </div>
 
   </div>
@@ -60,7 +131,7 @@
 
 <script>
   // Open the report modal without navigating away from the page
-  window.openReportModal = function(id, autoPrint = false) {
+  window.openReportModal = function(id) {
     const modal = document.getElementById('dali-report-modal');
     const loading = document.getElementById('modal-report-loading');
     const content = document.getElementById('modal-report-content');
@@ -94,13 +165,6 @@
         } else {
           codeBadge.textContent = 'REP-' + id;
         }
-
-        // If user requested direct Export/Print, trigger print preview
-        if (autoPrint) {
-          setTimeout(() => {
-            printModalReport();
-          }, 300);
-        }
       })
       .catch(err => {
         loading.classList.add('hidden');
@@ -127,60 +191,61 @@
     document.body.style.overflow = '';
   };
 
-  // Print / Export to PDF directly from modal without page change
+  // Direct PDF Download using html2pdf
+  window.exportModalToPdf = function() {
+    const element = document.getElementById('modal-report-content');
+    const codeBadge = document.getElementById('modal-report-code');
+    const btn = document.getElementById('modal-export-pdf-btn');
+
+    if (!element || !element.innerHTML) return;
+
+    const reportCode = (codeBadge?.textContent || 'Inspection_Report').trim().replace(/[^a-zA-Z0-9_-]/g, '_');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating PDF...';
+    btn.disabled = true;
+
+    const opt = {
+      margin: [10, 8, 10, 8],
+      filename: `DALI_Inspection_${reportCode}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    if (window.html2pdf) {
+      window.html2pdf().set(opt).from(element).save().then(() => {
+        btn.innerHTML = '<i class="fas fa-check text-emerald-300"></i> Downloaded!';
+        setTimeout(() => {
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+        }, 1500);
+      }).catch(err => {
+        console.error("PDF generation error:", err);
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        printModalReport();
+      });
+    } else {
+      btn.innerHTML = originalText;
+      btn.disabled = false;
+      printModalReport();
+    }
+  };
+
+  // Print with full visible print preview
   window.printModalReport = function() {
     const content = document.getElementById('modal-report-content');
     if (!content || !content.innerHTML) return;
 
-    let printFrame = document.getElementById('report-print-frame');
-    if (!printFrame) {
-      printFrame = document.createElement('iframe');
-      printFrame.id = 'report-print-frame';
-      printFrame.style.position = 'fixed';
-      printFrame.style.right = '0';
-      printFrame.style.bottom = '0';
-      printFrame.style.width = '0';
-      printFrame.style.height = '0';
-      printFrame.style.border = '0';
-      document.body.appendChild(printFrame);
-    }
+    document.body.classList.add('printing-modal');
 
-    const doc = printFrame.contentWindow.document;
-    doc.open();
-    doc.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <title>DALI Sanitation Compliance Inspection Report</title>
-        <script src="https://cdn.tailwindcss.com"><\/script>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-        <style>
-          body { 
-            background: #ffffff !important; 
-            color: #000000 !important; 
-            font-size: 11pt !important; 
-            padding: 10mm !important; 
-            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-          }
-          @page { size: A4 portrait; margin: 10mm; }
-          .print-avoid-break { break-inside: avoid !important; page-break-inside: avoid !important; }
-        </style>
-      </head>
-      <body>
-        <div class="space-y-8">${content.innerHTML}</div>
-        <script>
-          window.onload = function() {
-            setTimeout(function() {
-              window.focus();
-              window.print();
-            }, 350);
-          };
-        <\/script>
-      </body>
-      </html>
-    `);
-    doc.close();
+    // Allow browser layout engine to recognize the full-size visible element before invoking print
+    setTimeout(() => {
+      window.print();
+      setTimeout(() => {
+        document.body.classList.remove('printing-modal');
+      }, 600);
+    }, 120);
   };
 
   // Close on Escape key

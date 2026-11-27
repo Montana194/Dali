@@ -65,10 +65,10 @@
       </div>
 
       <div class="flex items-center space-x-2.5">
-        <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-white border-2 border-rose-600 hover:bg-rose-50 text-rose-700 font-extrabold text-sm shadow-sm flex items-center gap-2 transition-all hover:scale-[1.02]">
+        <button id="view-export-pdf-btn" onclick="exportViewToPdf()" class="px-4 py-2 rounded-xl bg-white border-2 border-rose-600 hover:bg-rose-50 text-rose-700 font-extrabold text-sm shadow-sm flex items-center gap-2 transition-all hover:scale-[1.02] cursor-pointer">
           <i class="fas fa-file-pdf text-rose-600"></i> Export to PDF
         </button>
-        <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm shadow-md flex items-center gap-2 transition-all hover:scale-[1.02]">
+        <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-sm shadow-md flex items-center gap-2 transition-all hover:scale-[1.02] cursor-pointer">
           <i class="fas fa-print"></i> Print Official Record
         </button>
       </div>
@@ -93,11 +93,52 @@
     </div>
 
     <!-- Official Printable Document Container (A4 Sheet Preview) -->
-    <div class="preview-sheet print-doc rounded-2xl p-8 sm:p-12 space-y-8 print:border-0 print:shadow-none print:p-0">
+    <div id="view-report-sheet" class="preview-sheet print-doc rounded-2xl p-8 sm:p-12 space-y-8 print:border-0 print:shadow-none print:p-0">
       {{> report-document}}
     </div>
 
   </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script>
+    window.exportViewToPdf = function() {
+      const element = document.getElementById('view-report-sheet');
+      const btn = document.getElementById('view-export-pdf-btn');
+      if (!element) return;
+
+      const reportCode = '{{report.reportCode}}'.trim() || 'Report';
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin text-rose-600"></i> Generating PDF...';
+      btn.disabled = true;
+
+      const opt = {
+        margin: [10, 8, 10, 8],
+        filename: `DALI_Inspection_${reportCode}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      if (window.html2pdf) {
+        window.html2pdf().set(opt).from(element).save().then(() => {
+          btn.innerHTML = '<i class="fas fa-check text-emerald-600"></i> Downloaded!';
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          }, 1500);
+        }).catch(err => {
+          console.error('PDF generation failed:', err);
+          btn.innerHTML = originalText;
+          btn.disabled = false;
+          window.print();
+        });
+      } else {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        window.print();
+      }
+    };
+  </script>
 
   {{#if autoPrint}}
   <script>
