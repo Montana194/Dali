@@ -90,16 +90,19 @@
                   {{/if}}
                   {{#if (eq this.status 'Noncompliant')}}
                     <a class="edit-product-button" style="padding:6px 12px;font-size:12px;" href="/inspector/conduct/{{this.id}}">Review Checklist</a>
-                    <a class="hero-button" style="padding:6px 12px;font-size:12px;background:#0f172a;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{this.id}}?print=true" target="_blank" title="Print Inspection Record">
-                      <i class="fas fa-print"></i> Print Record
+                    <a class="edit-product-button" style="padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{this.id}}" title="Preview Report">
+                      <i class="fas fa-eye text-blue-600"></i> Preview Report
+                    </a>
+                    <a class="hero-button" style="padding:6px 12px;font-size:12px;background:#0f172a;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{this.id}}?print=true" target="_blank" title="Export or Print Inspection Record">
+                      <i class="fas fa-file-export text-emerald-400"></i> Export / Print
                     </a>
                   {{/if}}
                   {{#if (or (eq this.status 'Closed') (eq this.status 'Compliant'))}}
-                    <a class="edit-product-button" style="padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{this.id}}">
-                      <i class="fas fa-eye"></i> View
+                    <a class="edit-product-button" style="padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{this.id}}" title="Preview Full Report">
+                      <i class="fas fa-eye text-blue-600"></i> Preview Report
                     </a>
-                    <a class="hero-button" style="padding:6px 12px;font-size:12px;background:#0f172a;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{this.id}}?print=true" target="_blank" title="Print Official Inspection Record">
-                      <i class="fas fa-print"></i> Print Record
+                    <a class="hero-button" style="padding:6px 12px;font-size:12px;background:#0f172a;display:inline-flex;align-items:center;gap:4px;" href="/reports/view/{{this.id}}?print=true" target="_blank" title="Export as PDF or Print Record">
+                      <i class="fas fa-file-export text-emerald-400"></i> Export / Print
                     </a>
                   {{/if}}
                 </div>
