@@ -38,8 +38,13 @@ services:
       DB_PASSWORD: daliaudit_secure_pass_2026
       SESSION_SECRET: dali-production-cloud-session-secret-2026
       SESSION_COOKIE_NAME: daliaudit.sid
-      INTEGRATION_API_KEY: oZh1fMRqnYFVySSdPhITpodaihiK4nCrhCgbnjYMTwc
-      DALIAUDIT_API_TOKEN: oZh1fMRqnYFVySSdPhITpodaihiK4nCrhCgbnjYMTwc
+      DALISTOCK_BASE_URL: "http://16.178.169.233"
+      STOCK_API_BASE_URL: "http://16.178.169.233"
+      STOCK_API_TOKEN: "daliaudit-integration-key-2026"
+      STOCK_BRANCH_CODE: "BR-001"
+      DALIAUDIT_API_KEY: "daliaudit-integration-key-2026"
+      INTEGRATION_API_KEY: "daliaudit-integration-key-2026"
+      DALIAUDIT_API_TOKEN: "daliaudit-integration-key-2026"
 
 volumes:
   db_data:
