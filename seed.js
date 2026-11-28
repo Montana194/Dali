@@ -26,59 +26,7 @@ export async function seedDatabase() {
 
   console.log("🌱 Seeding initial DALIAudit data...");
 
-  // 1. Create Users
-  const adminPassword = await bcrypt.hash("admin123", 10);
-  const inspectorPassword = await bcrypt.hash("inspector123", 10);
-  const storeRepPassword = await bcrypt.hash("store123", 10);
-
-  const admin = await User.create({
-    fullName: "Admin User",
-    email: "admin@dali.ph",
-    password: adminPassword,
-    role: "ADMIN",
-    phone: "+63 917 100 0001",
-    badgeNumber: "ADM-001"
-  });
-
-  const inspector = await User.create({
-    fullName: "Inspector One",
-    email: "inspector@dali.ph",
-    password: inspectorPassword,
-    role: "INSPECTOR",
-    phone: "+63 917 200 0002",
-    badgeNumber: "INS-001"
-  });
-
-  const inspector2 = await User.create({
-    fullName: "Inspector Maria Santos",
-    email: "maria.inspector@dali.ph",
-    password: inspectorPassword,
-    role: "INSPECTOR",
-    phone: "+63 917 200 0003",
-    badgeNumber: "INS-002"
-  });
-
-  const storeRep = await User.create({
-    fullName: "Store Representative (Alabang)",
-    email: "rep.alabang@dali.ph",
-    password: storeRepPassword,
-    role: "STORE_REP",
-    phone: "+63 917 300 0001",
-    storeId: 1
-  });
-
-  const storeRepPasig = await User.create({
-    fullName: "Store Representative (Pasig)",
-    email: "rep.pasig@dali.ph",
-    password: storeRepPassword,
-    role: "STORE_REP",
-    phone: "+63 917 300 0002",
-    storeId: 2
-  });
-
-  console.log("✅ Seeded Users (Admin, Inspectors, Store Reps).");
-
-  // 2. Create Stores
+  // 1. Create Stores first so storeId references exist
   const store1 = await Store.create({
     code: "DALI-MNL-001",
     name: "DALI Everyday Grocery - Alabang Zapote",
@@ -130,6 +78,60 @@ export async function seedDatabase() {
     overallRating: 84,
     lastInspectionDate: new Date(Date.now() - 3 * 86400000)
   });
+
+  console.log("✅ Seeded Stores.");
+
+  // 2. Create Users
+  const adminPassword = await bcrypt.hash("admin123", 10);
+  const inspectorPassword = await bcrypt.hash("inspector123", 10);
+  const storeRepPassword = await bcrypt.hash("store123", 10);
+
+  const admin = await User.create({
+    fullName: "Admin User",
+    email: "admin@dali.ph",
+    password: adminPassword,
+    role: "ADMIN",
+    phone: "+63 917 100 0001",
+    badgeNumber: "ADM-001"
+  });
+
+  const inspector = await User.create({
+    fullName: "Inspector One",
+    email: "inspector@dali.ph",
+    password: inspectorPassword,
+    role: "INSPECTOR",
+    phone: "+63 917 200 0002",
+    badgeNumber: "INS-001"
+  });
+
+  const inspector2 = await User.create({
+    fullName: "Inspector Maria Santos",
+    email: "maria.inspector@dali.ph",
+    password: inspectorPassword,
+    role: "INSPECTOR",
+    phone: "+63 917 200 0003",
+    badgeNumber: "INS-002"
+  });
+
+  const storeRep = await User.create({
+    fullName: "Store Representative (Alabang)",
+    email: "rep.alabang@dali.ph",
+    password: storeRepPassword,
+    role: "STORE_REP",
+    phone: "+63 917 300 0001",
+    storeId: store1.id
+  });
+
+  const storeRepPasig = await User.create({
+    fullName: "Store Representative (Pasig)",
+    email: "rep.pasig@dali.ph",
+    password: storeRepPassword,
+    role: "STORE_REP",
+    phone: "+63 917 300 0002",
+    storeId: store2.id
+  });
+
+  console.log("✅ Seeded Users (Admin, Inspectors, Store Reps).");
 
   console.log("✅ Seeded DALI Grocery Stores.");
 
