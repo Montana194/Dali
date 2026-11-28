@@ -10,6 +10,20 @@ import {
   Evidence 
 } from "../models/index.js";
 
+// In-memory cache for fast report details and modal rendering (60s TTL)
+const reportCache = new Map();
+const modalHtmlCache = new Map();
+
+export const invalidateReportCache = (id) => {
+  if (id) {
+    reportCache.delete(String(id));
+    modalHtmlCache.delete(String(id));
+  } else {
+    reportCache.clear();
+    modalHtmlCache.clear();
+  }
+};
+
 // List all reports
 export const getReportsList = async (req, res) => {
   try {
@@ -34,6 +48,12 @@ export const getReportsList = async (req, res) => {
 
 // Helper: Fetch Report with Complete Relational Details & Auto-Creation Fallback
 export const fetchReportWithDetails = async (id, userId) => {
+  const cacheKey = String(id);
+  const cached = reportCache.get(cacheKey);
+  if (cached && Date.now() - cached.time < 60000) {
+    return cached.data;
+  }
+
   const reportInclude = [
     { model: Store, as: "store" },
     { model: User, as: "inspector" },
@@ -131,7 +151,9 @@ export const fetchReportWithDetails = async (id, userId) => {
     items: categoryScores[catName].items
   }));
 
-  return { report, categoriesBreakdown };
+  const result = { report, categoriesBreakdown };
+  reportCache.set(cacheKey, { data: result, time: Date.now() });
+  return result;
 };
 
 // View Detailed Report & Printable Inspection Record
@@ -139,7 +161,7 @@ export const viewReport = async (req, res) => {
   try {
     const { id } = req.params;
     const shouldAutoPrint = req.query.print === "true" || req.query.print === "1";
-    const data = await fetchReportWithDetails(id, req.session.userId);
+    const data = await fetchReportWithDetails(id, req.session?.userId);
 
     if (!data) {
       req.flash("error_msg", "Compliance inspection report not found.");
@@ -171,16 +193,31 @@ export const viewReport = async (req, res) => {
 export const getReportModalContent = async (req, res) => {
   try {
     const { id } = req.params;
-    const data = await fetchReportWithDetails(id, req.session.userId);
+    const cacheKey = String(id);
+    const cachedHtml = modalHtmlCache.get(cacheKey);
+    if (cachedHtml && Date.now() - cachedHtml.time < 60000) {
+      res.setHeader("X-Cache", "HIT");
+      return res.send(cachedHtml.html);
+    }
+
+    const data = await fetchReportWithDetails(id, req.session?.userId);
 
     if (!data) {
       return res.status(404).send("<div class='p-8 text-center text-rose-600 font-bold'>Inspection report not found.</div>");
     }
 
-    res.render("partials/report-document", {
+    req.app.render("partials/report-document", {
       layout: false,
       report: data.report,
       categoriesBreakdown: data.categoriesBreakdown
+    }, (err, html) => {
+      if (err) {
+        console.error("Render error:", err);
+        return res.status(500).send("<div class='p-8 text-center text-rose-600 font-bold'>Failed to render report.</div>");
+      }
+      modalHtmlCache.set(cacheKey, { html, time: Date.now() });
+      res.setHeader("X-Cache", "MISS");
+      res.send(html);
     });
   } catch (error) {
     console.error("Modal report error:", error);

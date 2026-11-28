@@ -1,5 +1,5 @@
-<!-- html2pdf library for client-side direct PDF download -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<!-- html2pdf library for client-side direct PDF download (deferred for non-blocking page load) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
 
 <style>
   /* Modal Direct Print Stylesheet (Shows Full Print Preview in Browser) */
@@ -130,6 +130,9 @@
 </div>
 
 <script>
+  // High-performance client-side cache for instant 0ms modal opening
+  const reportModalClientCache = new Map();
+
   // Open the report modal without navigating away from the page
   window.openReportModal = function(id) {
     const modal = document.getElementById('dali-report-modal');
@@ -142,6 +145,16 @@
     modal.classList.remove('hidden');
     modal.classList.add('flex');
     document.body.style.overflow = 'hidden';
+
+    // ⚡ INSTANT CACHE HIT: Render immediately with zero wait or spinner
+    if (reportModalClientCache.has(id)) {
+      const cached = reportModalClientCache.get(id);
+      content.innerHTML = cached.html;
+      if (codeBadge) codeBadge.textContent = cached.code;
+      loading.classList.add('hidden');
+      content.classList.remove('hidden');
+      return;
+    }
 
     loading.classList.remove('hidden');
     content.classList.add('hidden');
@@ -159,12 +172,15 @@
         content.classList.remove('hidden');
 
         // Extract report code from content if available
+        let reportCode = 'REP-' + id;
         const codeElem = content.querySelector('.font-mono.text-xl');
-        if (codeElem) {
-          codeBadge.textContent = codeElem.textContent.trim();
-        } else {
-          codeBadge.textContent = 'REP-' + id;
+        if (codeElem && codeElem.textContent.trim()) {
+          reportCode = codeElem.textContent.trim();
         }
+        codeBadge.textContent = reportCode;
+
+        // Cache for subsequent instant opens
+        reportModalClientCache.set(id, { html, code: reportCode });
       })
       .catch(err => {
         loading.classList.add('hidden');
@@ -212,7 +228,7 @@
       jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    if (window.html2pdf) {
+    const doSave = () => {
       window.html2pdf().set(opt).from(element).save().then(() => {
         btn.innerHTML = '<i class="fas fa-check text-emerald-300"></i> Downloaded!';
         setTimeout(() => {
@@ -225,10 +241,20 @@
         btn.disabled = false;
         printModalReport();
       });
+    };
+
+    if (window.html2pdf) {
+      doSave();
     } else {
-      btn.innerHTML = originalText;
-      btn.disabled = false;
-      printModalReport();
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+      script.onload = () => doSave();
+      script.onerror = () => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        printModalReport();
+      };
+      document.head.appendChild(script);
     }
   };
 
@@ -239,7 +265,6 @@
 
     document.body.classList.add('printing-modal');
 
-    // Allow browser layout engine to recognize the full-size visible element before invoking print
     setTimeout(() => {
       window.print();
       setTimeout(() => {
@@ -255,7 +280,7 @@
     }
   });
 
-  // Close on backdrop click
+  // Close on backdrop click & Background prefetch
   document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('dali-report-modal');
     if (modal) {
@@ -264,6 +289,40 @@
           closeReportModal();
         }
       });
+    }
+
+    // 🚀 Background Prefetch: Load reports in memory so Export button opens instantly
+    const prefetchReports = () => {
+      const buttons = document.querySelectorAll('[onclick*="openReportModal"]');
+      const ids = new Set();
+      buttons.forEach(btn => {
+        const attr = btn.getAttribute('onclick') || '';
+        const match = attr.match(/openReportModal\(['"]([^'"]+)['"]\)/);
+        if (match && match[1]) ids.add(match[1]);
+      });
+
+      Array.from(ids).slice(0, 15).forEach(id => {
+        if (!reportModalClientCache.has(id)) {
+          fetch('/reports/modal/' + encodeURIComponent(id))
+            .then(res => res.ok ? res.text() : null)
+            .then(html => {
+              if (html) {
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                const codeElem = temp.querySelector('.font-mono.text-xl');
+                const code = codeElem?.textContent?.trim() || ('REP-' + id);
+                reportModalClientCache.set(id, { html, code });
+              }
+            })
+            .catch(() => {});
+        }
+      });
+    };
+
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(prefetchReports, { timeout: 1500 });
+    } else {
+      setTimeout(prefetchReports, 400);
     }
   });
 </script>

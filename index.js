@@ -28,8 +28,9 @@ const HOST = process.env.HOST || "0.0.0.0";
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
-app.use(express.static(path.join(process.cwd(), "public")));
+app.use(express.static(path.join(__dirname, "public"), { maxAge: "7d", etag: true }));
+app.use(express.static(path.join(process.cwd(), "public"), { maxAge: "7d", etag: true }));
+app.enable("view cache");
 
 const isProduction = process.env.NODE_ENV === "production";
 const sessionSecret = process.env.SESSION_SECRET || "daliaudit-secure-session-key-2026";
