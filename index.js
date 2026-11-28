@@ -26,6 +26,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || "0.0.0.0";
 
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public"), { maxAge: "7d", etag: true }));
@@ -46,7 +47,7 @@ app.use(
       maxAge: 24 * 60 * 60 * 1000,
       httpOnly: true,
       sameSite: "lax",
-      secure: isProduction
+      secure: "auto"
     }
   })
 );

@@ -70,9 +70,14 @@ export const loginUser = async (req, res) => {
     req.session.userId = user.id;
     req.flash("success_msg", `Welcome, ${user.fullName}!`);
 
-    if (role === "admin") return res.redirect("/admin");
-    if (role === "inspector" || role === "staff") return res.redirect("/inspector");
-    return res.redirect("/store");
+    req.session.save((err) => {
+      if (err) {
+        console.error("Session save error:", err);
+      }
+      if (role === "admin") return res.redirect("/admin");
+      if (role === "inspector" || role === "staff") return res.redirect("/inspector");
+      return res.redirect("/store");
+    });
   } catch (error) {
     console.error("Login error:", error);
     req.flash("error_msg", "An unexpected error occurred during login.");
@@ -92,9 +97,11 @@ export const quickLogin = async (req, res) => {
       req.session.userId = user.id;
       const normalizedRole = (user.role || "").toLowerCase();
       req.flash("success_msg", `Switched to ${user.fullName} (${user.role} role).`);
-      if (normalizedRole === "admin") return res.redirect("/admin");
-      if (normalizedRole === "inspector" || normalizedRole === "staff") return res.redirect("/inspector");
-      return res.redirect("/store");
+      return req.session.save(() => {
+        if (normalizedRole === "admin") return res.redirect("/admin");
+        if (normalizedRole === "inspector" || normalizedRole === "staff") return res.redirect("/inspector");
+        return res.redirect("/store");
+      });
     }
     res.redirect("/account/login");
   } catch (err) {
