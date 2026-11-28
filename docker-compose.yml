@@ -3,6 +3,7 @@ services:
     image: mariadb:10.11
     container_name: dali-db
     restart: unless-stopped
+    command: --lower_case_table_names=1
     environment:
       MYSQL_ROOT_PASSWORD: daliaudit_root_pass_2026
       MYSQL_DATABASE: daliaudit_db
